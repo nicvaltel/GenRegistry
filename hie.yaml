@@ -1,0 +1,13 @@
+cradle:
+  cabal:
+    - path: "src"
+      component: "lib:gen-registry"
+
+    - path: "app/Main.hs"
+      component: "gen-registry:exe:gen-registry-exe"
+
+    - path: "app/Paths_gen_registry.hs"
+      component: "gen-registry:exe:gen-registry-exe"
+
+    - path: "test"
+      component: "gen-registry:test:gen-registry-test"
