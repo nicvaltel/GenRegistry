@@ -11,16 +11,9 @@ main :: IO ()
 main = do
   env <- parseFile "config.env"
 
-  inputData <-
-    loadInputData
-      env
-      "input_data/RIO_TG.csv"
-      "input_data/KOM_PO_TG.csv"
-      "input_data/SO_REGISTRY.csv"
-      "input_data/GA_2007-2011.csv"
+  inputData <- loadInputData env
 
-
-  print $ routine inputData
+  -- print $ routine inputData
   pure ()
 
 -- env <- parseFile "config.env"

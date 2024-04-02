@@ -24,6 +24,7 @@ source-repository head
 
 library
   exposed-modules:
+      GaMonthly.GaMonthly
       Lib
       LoadInputData
       Routine
@@ -45,6 +46,7 @@ library
     , cassava
     , containers
     , dotenv
+    , either
     , exceptions
     , mtl
     , readable
@@ -68,6 +70,7 @@ executable gen-registry-exe
     , cassava
     , containers
     , dotenv
+    , either
     , exceptions
     , gen-registry
     , mtl
@@ -93,6 +96,7 @@ test-suite gen-registry-test
     , cassava
     , containers
     , dotenv
+    , either
     , exceptions
     , gen-registry
     , mtl

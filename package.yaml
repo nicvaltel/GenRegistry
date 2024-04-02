@@ -33,6 +33,7 @@ dependencies:
 - mtl
 - exceptions
 - dotenv
+- either
 
 ghc-options:
 - -Wall
