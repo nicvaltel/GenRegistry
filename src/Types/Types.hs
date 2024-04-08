@@ -39,13 +39,13 @@ data MVRType = MVR_EE | MVR_HEAT
 
 
 
-data YearDate = YearDate
-  { ydYear :: Int,
-    yd_VrBanDate :: Day,
-    ydStartYearDate :: Day,
-    ydFinishYearDate :: Day,
-    ydFirstApril :: Day,
-    ydSecondTermDate :: Day,
-    ydMinPust :: Pust
+data ConstantsAndDates = ConstantsAndDates
+  { cndYear :: Int,
+    cndVrBanDate :: Day,
+    cndStartYearDate :: Day,
+    cndFinishYearDate :: Day,
+    cndFirstApril :: Day,
+    cndSecondTermDate :: Day,
+    cndMinPust :: Pust
   }
   deriving (Show)

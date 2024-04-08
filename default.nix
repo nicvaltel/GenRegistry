@@ -26,9 +26,11 @@ in
       compiler.ghc
       pkgs.haskellPackages.record-dot-preprocessor
       pkgs.zlib
+      pkgs.haskellPackages.unicode-show
+      # ghci> import qualified Text.Show.Unicode
+      # ghci> :set -interactive-print=Text.Show.Unicode.uprint
     ];
 }
-
 
 # To run HLS:
 # stack new MyProgram

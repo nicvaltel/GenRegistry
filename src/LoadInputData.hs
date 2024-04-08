@@ -12,7 +12,7 @@ import Text.Read (readMaybe)
 import Types.KOMTG (KOMTG)
 import Types.RIOTG ( RIOTG )
 import Types.SoRegistry (SoRegistry)
-import Types.Types ( YearDate(..) )
+import Types.Types ( ConstantsAndDates(..) )
 import Types.ExploitationStartYear (ExploitationStartYear)
 import Data.Either.Combinators(maybeToRight)
 
@@ -25,7 +25,7 @@ data InputData = InputData
     datKOMTG :: [KOMTG],
     datSoRegistry :: [SoRegistry],
     datExploitationStartYear :: [ExploitationStartYear],
-    datYearDate :: YearDate
+    datYearDate :: ConstantsAndDates
   } deriving (Show)
 
 parseCSV :: FromNamedRecord a => FilePath -> IO (Either ErrorMsg (CsvData a))
@@ -49,20 +49,20 @@ loadSoRegistry = parseCSV
 loadKOMTG :: FilePath -> IO (Either ErrorMsg (CsvData KOMTG))
 loadKOMTG = parseCSV
 
-mkYearDate :: [(String, String)] -> YearDate
+mkYearDate :: [(String, String)] -> ConstantsAndDates
 mkYearDate env =
   case readMaybe <$> lookup "MIN_PUST" env of
     Just (Just (minPust :: Float)) ->
       case readMaybe <$> lookup "YEAR" env of
         Just (Just (year :: Integer)) ->
-          YearDate
-            { ydYear = fromIntegral year,
-              yd_VrBanDate = fromGregorian (year - 1) 10 15,
-              ydStartYearDate = fromGregorian year 1 1,
-              ydFinishYearDate = fromGregorian year 12 31,
-              ydFirstApril = fromGregorian year 4 1,
-              ydSecondTermDate = fromGregorian year 7 1,
-              ydMinPust = minPust
+          ConstantsAndDates
+            { cndYear = fromIntegral year,
+              cndVrBanDate = fromGregorian (year - 1) 10 15,
+              cndStartYearDate = fromGregorian year 1 1,
+              cndFinishYearDate = fromGregorian year 12 31,
+              cndFirstApril = fromGregorian year 4 1,
+              cndSecondTermDate = fromGregorian year 7 1,
+              cndMinPust = minPust
             }
         _ -> error "YEAR field is abscent or incorrect in config.env file"
     _ -> error "MIN_PUST field is abscent or incorrect in config.env file"

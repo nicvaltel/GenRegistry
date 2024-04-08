@@ -27,7 +27,7 @@ data RIOTG = RIOTG
     riotgStationCategory :: StationCategory,
     riotgGTPName :: String,
     riotgGTPCode :: String,
-    riotgIsUnpriceZone :: Int,
+    riotgIsUnpriceZone :: Maybe Int,
     riotgPriceZone :: PriceZone,
     riotgPust :: Pust,
     riotgIsSpotTrader :: Bool,

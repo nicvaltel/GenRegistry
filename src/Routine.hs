@@ -15,22 +15,24 @@ import Types.KOMTG (KOMTG (..))
 import Types.RIOTG (RIOTG (..))
 import Types.SoRegistry (SoRegistry (..))
 import Types.Types
+import Data.Maybe (isNothing)
 
 type ErrorMsg = String
 
 routine :: InputData -> Either [ErrorMsg] [GenRegistry]
 routine inputData@InputData {datRIOTG, datKOMTG, datSoRegistry, datExploitationStartYear, datYearDate} = do
-  -- tgs <- case filterAndCheckInputData inputData of
-  --   Right tgs -> Right tgs
-  --   Left err -> Left [err]
-  -- let res = map (flip mkPreliminaryGenReg datKOMTG) tgs
+
+  tgs <- case filterAndCheckInputData inputData of
+    Right tgs -> Right tgs
+    Left err -> Left [err]
+  let res = map (`mkPreliminaryGenReg` datKOMTG) tgs
   -- -- getRegPre <- mkPreliminaryGenRegistry tgs2
 
   -- traceShow res $ pure ()
   -- -- pure []
   -- res
 
-  undefined
+  pure []
 
 filterAndCheckInputData :: InputData -> Either ErrorMsg [RIOTG]
 filterAndCheckInputData InputData {datRIOTG, datKOMTG, datSoRegistry, datExploitationStartYear, datYearDate} = do
@@ -54,13 +56,13 @@ checkInputData riotg komtg soReg = do
 getPust :: [SoRegistry] -> Map StationCode Pust
 getPust = foldr (\so acc -> Map.insertWith (+) (sorStationCode so) (sorUstPower so) acc) Map.empty
 
-filterRIOTGByPust :: [RIOTG] -> Map StationCode Pust -> YearDate -> Either ErrorMsg [RIOTG]
-filterRIOTGByPust tgs pust YearDate {ydMinPust} = do
+filterRIOTGByPust :: [RIOTG] -> Map StationCode Pust -> ConstantsAndDates -> Either ErrorMsg [RIOTG]
+filterRIOTGByPust tgs pust ConstantsAndDates{cndMinPust} = do
   let stationNotInPust = [riotgStationCode tg | tg <- tgs, not (Map.member (riotgStationCode tg) pust)]
   _ <- case stationNotInPust of
     [] -> Right []
     _ -> Left $ "filterRIOTGByPustAndDates: some stations from RIOTG not in Pust list: " <> show (nub stationNotInPust)
-  Right $ filter (\tg -> pust Map.! riotgStationCode tg >= ydMinPust) tgs
+  pure $ filter (\tg -> pust Map.! riotgStationCode tg >= cndMinPust) tgs
 
 filterRIOTG :: [RIOTG] -> [RIOTG]
 filterRIOTG =
@@ -69,7 +71,7 @@ filterRIOTG =
     . filter (\tg -> (toUpper <$> riotgSubjectCode tg) /= "MOBGTSGK")
     . filter riotgIsExploitationTypeNormal
     . filter riotgIsSpotTrader
-    . filter ((== 0) . riotgIsUnpriceZone)
+    . filter ((\z -> isNothing z || z == Just 0) . riotgIsUnpriceZone)
 
 mkPreliminaryGenReg :: RIOTG -> [KOMTG] -> Either ErrorMsg GenRegistry
 mkPreliminaryGenReg riotg komtgs = do
@@ -77,62 +79,65 @@ mkPreliminaryGenReg riotg komtgs = do
   komtg <- case [ktg | ktg <- komtgs, komtgEGOCode ktg == gaCode] of
     [ktg] -> Right ktg
     _ -> Left $ "mkPreliminaryGenReg: gaCode from RIO does not match to KomByTG: gaCode = " <> show gaCode
-  Right $ undefined
+  let isVR = undefined :: Bool
+  let isDPM = undefined :: Bool
+  let isKOMMod = undefined :: Bool
+  Right $ GenRegistry
+    { grSubject = riotgSubject riotg,
+      grSubjectCode = riotgSubjectCode riotg,
+      grSubjectFST = riotgSubjectFST riotg,
+      grSubjectFSTCode = riotgSubjectFSTCode riotg,
+      grStationName = riotgStationName riotg,
+      grStationCode = riotgStationCode riotg,
+      grStationType = riotgStationType riotg,
+      grGTPGname = riotgGTPName riotg,
+      grGTPGCode = riotgGTPCode riotg,
+      grUnpriceZoneCode = riotgIsUnpriceZone riotg,
+      grPriceZone = riotgPriceZone riotg,
+      grPust = riotgPust riotg,
+      grIsSpotTrader = riotgIsSpotTrader riotg,
+      grIsExploitationTypeNormal = riotgIsExploitationTypeNormal riotg,
+      grIsDPM = riotgIsDPM riotg,
+      grRegionRFCode = riotgRegionRFCode riotg,
+      grOES = riotgOES riotg,
+      grZSP = riotgZSP riotg,
+      grRGECode = riotgRgeCode riotg,
+      grGACode = riotgGaCode riotg,
+      grGaName = riotgGaName riotg,
+      grGEM = riotgGEM riotg, -- Принадлежность к ГЕМ
 
--- GenRegistry
--- { grSubject = riotgSubject riotg,
---   grSubjectCode = riotgSubjectCode riotg,
---   grSubjectFST = riotgSubjectFST riotg,
---   grSubjectFSTCode = riotgSubjectFSTCode riotg,
---   grStationName = riotgStationName riotg,
---   grStationCode = riotgStationCode riotg,
---   grStationType = riotgStationType riotg,
---   grGTPGname = riotgGTPName riotg,
---   grGTPGCode = riotgGTPCode riotg,
---   grIsUnpriceZone = riotgIsUnpriceZone riotg,
---   grPriceZone = riotgPriceZone riotg,
---   grPust = riotgPust riotg,
---   grIsSpotTrader = riotgIsSpotTrader riotg,
---   grIsExploitationTypeNormal = riotgIsExploitationTypeNormal riotg,
---   grIsDPM = riotgIsDPM riotg,
---   grRegionRFCode = riotgRegionRFCode riotg,
---   grOES = riotgOES riotg,
---   grZSP = riotgZSP riotg,
---   grRGECode = riotgRgeCode riotg,
---   grGACode = riotgGaCode riotg,
---   grGaName = riotgGaName riotg,
---   grGEM = riotgGEM riotg, -- Принадлежность к ГЕМ
---   grGemSelectionResult = GemSelectionResult, -- Результат отбора по ГЕМ
---   grVR_KOM = Maybe Bool, -- ВР_КОМ
---   grNotSelectedInKOM = Bool, -- Не отобрано
---   grKOMRequestAbsent = Bool, -- Нет_заявки_КОМ
---   grVRNotFromTheYearBegin = Maybe Bool, -- ВР_не_с_начала_года
---   grVRNotUntilTheYearEnd = Maybe Bool, -- ВР_не_до_конца_года
---   grVRNotCondideredInKOM = Maybe Bool, -- ВР_не_учтён_в_КОМ
---   grDpmStartDate = Maybe Day, -- Дата_начала_поставки_ДПМ
---   grVRProhibitDecisionDate = Maybe Day, -- Дата_решения_о_запрете(ВР)
---   grKOM = Bool, -- Группа_КОМ
---   grKOMMOD = Bool, -- Группа_КОММОД
---   grDPM = Bool, -- Группа_ДПМ
---   grNGO = Bool, -- Группа_НГО
---   grRPRF_2699 = Bool, -- Группа_РПРФ2699p
---   grVRwithAllYearCapacity = Maybe Bool, -- Группа_ВР_с_МЩ_весь_год
---   grVR_2007_2011 = Maybe Bool, -- Группа_ВР_2007-2011
---   grVRafter15october = Maybe Bool, -- Группа_ВР_после_15_октября
---   grVRNotAllYear = Maybe Bool, -- Группа_ВР_не_весь_год
---   grEESupply = SupplyAttribute, -- Поставка_ЭЭ_по_РД
---   grPWSupply = SupplyAttribute, -- Поставка_МЩ_по_РД
---   grPustStation = Pust, -- Руст_станции
---   grIsNewGesAes = Bool, -- IS_NEW_GES_AES
---   grIsVr = Bool, -- IS_VR
---   grVrFrom = Maybe Day, -- ВР c
---   grVrTo = Maybe Day, -- ВР до
---   grKOMMODModernizationStartDate = Maybe Day, -- KOMMOD_START_DATE
---   grKOMMODModernizationEndDate = Maybe Day, -- KOMMOD_END_DATE
---   grIsKOMMODSelected = Maybe Bool, -- KOMMOD_SELECTED
---   grKOMMODSupplyStart = Maybe Day, -- KOMMOD_SUPPLY_START
---   grIsVRProhibit = Bool, -- IS_VR_ZAPRET
---   grIsVyvodSoglasovan = Bool, -- IS_VUVOD_SOGLASOVAN
---   grVyvodSoglasovanDate = Maybe Day, -- DATA_VUVODA
---   grComment = ""
--- }
+
+      grGemSelectionResult = komtgGemSelectionResult komtg, -- Результат отбора по ГЕМ
+      grVR_KOM = if not isVR then Nothing else Just False, -- TODO update ВР_КОМ
+      grNotSelectedInKOM = False, -- Не отобрано
+      grKOMRequestAbsent = False, -- Нет_заявки_КОМ
+      grVRNotFromTheYearBegin = if not isVR then Nothing else Just False, -- ВР_не_с_начала_года
+      grVRNotUntilTheYearEnd = if not isVR then Nothing else Just False, -- ВР_не_до_конца_года
+      grVRNotCondideredInKOM = if not isVR then Nothing else Just False, -- ВР_не_учтён_в_КОМ
+      grDpmStartDate = if not isDPM then Nothing else Just undefined, -- Дата_начала_поставки_ДПМ
+      grVRProhibitDecisionDate = if not isVR then Nothing else Just undefined, -- Дата_решения_о_запрете(ВР)
+      grKOM = False, -- Группа_КОМ
+      grKOMMOD = False, -- Группа_КОММОД
+      grDPM = isDPM, -- Группа_ДПМ
+      grNGO = False, -- Группа_НГО
+      grRPRF_2699 = False, -- Группа_РПРФ2699p
+      grVRwithAllYearCapacity = if not isVR then Nothing else Just False, -- Группа_ВР_с_МЩ_весь_год
+      grVR_2007_2011 = if not isVR then Nothing else Just False, -- Группа_ВР_2007-2011
+      grVRafter15october = if not isVR then Nothing else Just False, -- Группа_ВР_после_15_октября
+      grVRNotAllYear = if not isVR then Nothing else Just False, -- Группа_ВР_не_весь_год
+      grEESupply = undefined, -- SupplyAttribute, -- Поставка_ЭЭ_по_РД
+      grPWSupply = undefined, -- SupplyAttribute, -- Поставка_МЩ_по_РД
+      grPustStation = 0, -- Руст_станции
+      grIsNewGesAes = False, -- IS_NEW_GES_AES
+      grIsVr = isVR, -- IS_VR
+      grVrFrom = if not isVR then Nothing else Just undefined, -- Maybe Day, -- ВР c
+      grVrTo = if not isVR then Nothing else Just undefined, -- ВР до
+      grKOMMODModernizationStartDate = if not isKOMMod then Nothing else Just undefined, -- Maybe Day, -- KOMMOD_START_DATE
+      grKOMMODModernizationEndDate = if not isKOMMod then Nothing else Just undefined, -- Maybe Day, -- KOMMOD_END_DATE
+      grIsKOMMODSelected = if not isKOMMod then Nothing else Just False, -- KOMMOD_SELECTED
+      grKOMMODSupplyStart =  if not isKOMMod then Nothing else Just undefined, -- KOMMOD_SUPPLY_START
+      grIsVRProhibit = False, -- IS_VR_ZAPRET
+      grIsVyvodSoglasovan = False, -- IS_VUVOD_SOGLASOVAN
+      grVyvodSoglasovanDate = if not isKOMMod then Nothing else Just undefined, -- DATA_VUVODA
+      grComment = ""
+    }

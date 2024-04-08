@@ -71,13 +71,13 @@ data GenRegistry = GenRegistry
     grSubjectFSTCode :: String, -- Код участника ФСТ
     grStationName :: String, -- Станция
     grStationCode :: StationCode, -- Код станции
-    grStationType :: String, -- Тип станции
+    grStationType :: StationType, -- Тип станции
     grGTPGname :: String, -- ГТП
     grGTPGCode :: String, -- Код ГТП
-    grIsUnpriceZone :: Bool, -- Признак неценовой зоны
+    grUnpriceZoneCode :: Maybe Int, -- Признак неценовой зоны
     grPriceZone :: PriceZone, -- Ценовая зона
     grPust :: Pust, -- установленная мощность
-    grIsSpotTrader :: String, -- выход_на_спот
+    grIsSpotTrader :: Bool, -- выход_на_спот
     grIsExploitationTypeNormal :: Bool, -- характер_экспл
     grIsDPM :: Bool, -- IS_DPM
     grRegionRFCode :: Int, -- Регион_РФ
