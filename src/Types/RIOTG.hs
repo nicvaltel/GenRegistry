@@ -4,28 +4,27 @@
 
 module Types.RIOTG where
 
-import Data.Csv ( (.:), FromNamedRecord(..) )
+import Data.Csv (FromNamedRecord (..), (.:))
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Encoding
-import Data.Time.Calendar ( Day )
-import Utils (dateConvert)
+import Data.Time.Calendar (Day)
+import ShowText
 import Types.Types
-
-
+import Utils (dateConvert)
 
 data RIOTG = RIOTG
-  { riotgSubject :: String,
+  { riotgSubject :: Text,
     riotgSubjectCode :: String,
     riotgKPO :: Maybe Int,
-    riotgSubjectFST :: String,
+    riotgSubjectFST :: Text,
     riotgSubjectFSTCode :: String,
     riotgSubjectFSTKPO :: Maybe Int,
-    riotgStationName :: String,
+    riotgStationName :: Text,
     riotgStationCode :: StationCode,
     riotgStationType :: StationType,
     riotgStationCategory :: StationCategory,
-    riotgGTPName :: String,
+    riotgGTPName :: Text,
     riotgGTPCode :: String,
     riotgIsUnpriceZone :: Maybe Int,
     riotgPriceZone :: PriceZone,
@@ -40,10 +39,10 @@ data RIOTG = RIOTG
     riotgDpmFinishDate :: Maybe Day,
     riotgRegionRFCode :: Int,
     riotgOES :: Int,
-    riotgZSP :: String,
+    riotgZSP :: Maybe String,
     riotgRgeCode :: Int,
     riotgGaCode :: Int,
-    riotgGaName :: String,
+    riotgGaName :: Text,
     riotgGEM :: Maybe Int,
     riotgIsVR :: Bool,
     riotgVRStartDate :: Maybe Day,
@@ -197,3 +196,99 @@ instance FromNamedRecord RIOTG where
       intTextToBool "1" = True
       intTextToBool "0" = False
       intTextToBool other = error $ "intTextToBool wrong text: " <> Text.unpack other
+
+instance ShowText RIOTG where
+  showText
+    RIOTG
+      { riotgSubject,
+        riotgSubjectCode,
+        riotgKPO,
+        riotgSubjectFST,
+        riotgSubjectFSTCode,
+        riotgSubjectFSTKPO,
+        riotgStationName,
+        riotgStationCode,
+        riotgStationType,
+        riotgStationCategory,
+        riotgGTPName,
+        riotgGTPCode,
+        riotgIsUnpriceZone,
+        riotgPriceZone,
+        riotgPust,
+        riotgIsSpotTrader,
+        riotgIsExploitationTypeNormal,
+        riotgIsDPM,
+        riotgIsGaes,
+        riotgIsNewGesAes,
+        riotgXAttrType,
+        riotgDpmStartDate,
+        riotgDpmFinishDate,
+        riotgRegionRFCode,
+        riotgOES,
+        riotgZSP,
+        riotgRgeCode,
+        riotgGaCode,
+        riotgGaName,
+        riotgGEM,
+        riotgIsVR,
+        riotgVRStartDate,
+        riotgVRFinishDate,
+        riotgKommodStartDate,
+        riotgKommodFinishDate,
+        riotgIsKommodSelected,
+        riotgKommodSupplyStartDate,
+        riotgIsVrZapret,
+        riotgIsVyvodSoglasovan,
+        riotgVyvodDate,
+        riotgIsKomNgoSelected,
+        riotgNgoStartDate,
+        riotgNgoFinishDate,
+        riotgIsRprf2699,
+        riotgRprf2699StartDate
+      } = "RIOTG {" <>
+          "riotgSubject = \"" <> riotgSubject <> "\", " <>
+          "riotgSubjectCode = " <> (Text.pack . show) riotgSubjectCode <> ", " <>
+          "riotgKPO = " <> (Text.pack . show) riotgKPO <> ", " <>
+          "riotgSubjectFST = \"" <> riotgSubjectFST <> "\", " <>
+          "riotgSubjectFSTCode = " <> (Text.pack . show) riotgSubjectFSTCode <> ", " <>
+          "riotgSubjectFSTKPO = " <> (Text.pack . show) riotgSubjectFSTKPO <> ", " <>
+          "riotgStationName = \"" <> riotgStationName <> "\", " <>
+          "riotgStationCode = " <> (Text.pack . show) riotgStationCode <> ", " <>
+          "riotgStationType = " <> (Text.pack . show) riotgStationType <> ", " <>
+          "riotgStationCategory = " <> (Text.pack . show) riotgStationCategory <> ", " <>
+          "riotgGTPName = \"" <> riotgGTPName <> "\", " <>
+          "riotgGTPCode = " <> (Text.pack . show) riotgGTPCode <> ", " <>
+          "riotgIsUnpriceZone = " <> (Text.pack . show) riotgIsUnpriceZone <> ", " <>
+          "riotgPriceZone = " <> (Text.pack . show) riotgPriceZone <> ", " <>
+          "riotgPust = " <> (Text.pack . show) riotgPust <> ", " <>
+          "riotgIsSpotTrader = " <> (Text.pack . show) riotgIsSpotTrader <> ", " <>
+          "riotgIsExploitationTypeNormal = " <> (Text.pack . show) riotgIsExploitationTypeNormal <> ", " <>
+          "riotgIsDPM = " <> (Text.pack . show) riotgIsDPM <> ", " <>
+          "riotgIsGaes = " <> (Text.pack . show) riotgIsGaes <> ", " <>
+          "riotgIsNewGesAes = " <> (Text.pack . show) riotgIsNewGesAes <> ", " <>
+          "riotgXAttrType = " <> (Text.pack . show) riotgXAttrType <> ", " <>
+          "riotgDpmStartDate = " <> (Text.pack . show) riotgDpmStartDate <> ", " <>
+          "riotgDpmFinishDate = " <> (Text.pack . show) riotgDpmFinishDate <> ", " <>
+          "riotgRegionRFCode = " <> (Text.pack . show) riotgRegionRFCode <> ", " <>
+          "riotgOES = " <> (Text.pack . show) riotgOES <> ", " <>
+          "riotgZSP = " <> (Text.pack . show) riotgZSP <> ", " <>
+          "riotgRgeCode = " <> (Text.pack . show) riotgRgeCode <> ", " <>
+          "riotgGaCode = " <> (Text.pack . show) riotgGaCode <> ", " <>
+          "riotgGaName = \"" <> riotgGaName <> "\", " <>
+          "riotgGEM = " <> (Text.pack . show) riotgGEM <> ", " <>
+          "riotgIsVR = " <> (Text.pack . show) riotgIsVR <> ", " <>
+          "riotgVRStartDate = " <> (Text.pack . show) riotgVRStartDate <> ", " <>
+          "riotgVRFinishDate = " <> (Text.pack . show) riotgVRFinishDate <> ", " <>
+          "riotgKommodStartDate = " <> (Text.pack . show) riotgKommodStartDate <> ", " <>
+          "riotgKommodFinishDate = " <> (Text.pack . show) riotgKommodFinishDate <> ", " <>
+          "riotgIsKommodSelected = " <> (Text.pack . show) riotgIsKommodSelected <> ", " <>
+          "riotgKommodSupplyStartDate = " <> (Text.pack . show) riotgKommodSupplyStartDate <> ", " <>
+          "riotgIsVrZapret = " <> (Text.pack . show) riotgIsVrZapret <> ", " <>
+          "riotgIsVyvodSoglasovan = " <> (Text.pack . show) riotgIsVyvodSoglasovan <> ", " <>
+          "riotgVyvodDate = " <> (Text.pack . show) riotgVyvodDate <> ", " <>
+          "riotgIsKomNgoSelected = " <> (Text.pack . show) riotgIsKomNgoSelected <> ", " <>
+          "riotgNgoStartDate = " <> (Text.pack . show) riotgNgoStartDate <> ", " <>
+          "riotgNgoFinishDate = " <> (Text.pack . show) riotgNgoFinishDate <> ", " <>
+          "riotgIsRprf2699 = " <> (Text.pack . show) riotgIsRprf2699 <> ", " <>
+          "riotgRprf2699StartDate = " <> (Text.pack . show) riotgRprf2699StartDate <>
+          "}"

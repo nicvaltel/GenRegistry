@@ -10,9 +10,6 @@ import qualified Data.Text as Text
 import Data.Text.Encoding
 import Types.Types
 
-import qualified Data.ByteString.UTF8 as UTF8 (fromString)
-import Data.ByteString (ByteString)
-
 data KOMTG = KOMTG
   { 
     -- komtgFilialODU :: String,
@@ -21,7 +18,7 @@ data KOMTG = KOMTG
     -- komtgSubjectName :: String,
     -- komtgSubjectFullName :: String,
     komtgStationCode :: String,
-    komtgStationName :: ByteString,
+    komtgStationName :: Text,
     komtgGTPGCode :: String,
     -- komtgGTPGName :: String,
     komtgGEMCode :: String,
@@ -57,7 +54,7 @@ instance FromNamedRecord KOMTG where
     -- komtgSubjectName <- record .: encodeUtf8 "Участник оптового рынка"
     -- komtgSubjectFullName <- record .: encodeUtf8 "Участник оптового рынка (полное наименование)"
     komtgStationCode <- record .: encodeUtf8 "Код электростанции"
-    komtgStationName <- UTF8.fromString <$> record .: encodeUtf8 "Наименование электростанции"
+    komtgStationName <- Text.pack <$> record .: encodeUtf8 "Наименование электростанции"
     komtgGTPGCode <- record .: encodeUtf8 "Код ГТПГ"
     -- komtgGTPGName <- record .: encodeUtf8 "Наименование ГТПГ"
     komtgGEMCode <- record .: encodeUtf8 "Код ГЕМ"

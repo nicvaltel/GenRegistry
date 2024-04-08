@@ -10,7 +10,7 @@ import qualified Data.Text as Text
 import Data.Text.Encoding
 import Data.Time.Calendar (MonthOfYear, Year)
 import Text.Read (readMaybe)
-import Types.Types (StationCode, Pust)
+import Types.Types (Pust, StationCode)
 
 data SoRegistry = SoRegistry
   { sorTargetMonth :: (Year, MonthOfYear),
@@ -25,7 +25,8 @@ data SoRegistry = SoRegistry
     -- sorJAttTp :: Maybe Int,
     -- sorJPlace :: Maybe Int,
     -- sorJName :: String
-  } deriving (Show)
+  }
+  deriving (Show)
 
 instance FromNamedRecord SoRegistry where
   parseNamedRecord record = do

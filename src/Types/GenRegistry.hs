@@ -2,6 +2,7 @@ module Types.GenRegistry where
 
 import Data.Time.Calendar (Day)
 import Types.Types
+import Data.Text (Text)
 
 data SupplyAttribute = NoSupply | SupplyAllYear | SupplyPeriod {supplyPeriodFrom :: Day, supplyPeriodTo :: Day}
   deriving (Show, Eq)
@@ -65,14 +66,14 @@ data SupplyAttribute = NoSupply | SupplyAllYear | SupplyPeriod {supplyPeriodFrom
 -- Комментарий
 
 data GenRegistry = GenRegistry
-  { grSubject :: String, -- Участник
+  { grSubject :: Text, -- Участник
     grSubjectCode :: String, -- Код участника
-    grSubjectFST :: String, -- Участник ФСТ
+    grSubjectFST :: Text, -- Участник ФСТ
     grSubjectFSTCode :: String, -- Код участника ФСТ
-    grStationName :: String, -- Станция
+    grStationName :: Text, -- Станция
     grStationCode :: StationCode, -- Код станции
     grStationType :: StationType, -- Тип станции
-    grGTPGname :: String, -- ГТП
+    grGTPGname :: Text, -- ГТП
     grGTPGCode :: String, -- Код ГТП
     grUnpriceZoneCode :: Maybe Int, -- Признак неценовой зоны
     grPriceZone :: PriceZone, -- Ценовая зона
@@ -82,10 +83,10 @@ data GenRegistry = GenRegistry
     grIsDPM :: Bool, -- IS_DPM
     grRegionRFCode :: Int, -- Регион_РФ
     grOES :: Int, -- ОЭС
-    grZSP :: String, -- ЗСП
+    grZSP :: Maybe String, -- ЗСП
     grRGECode :: Int, -- Код РГЕ
     grGACode :: Int, -- Код ГА
-    grGaName :: String, -- ГА
+    grGaName :: Text, -- ГА
     grGEM :: Maybe Int, -- Принадлежность к ГЕМ
     grGemSelectionResult :: GemSelectionResult, -- Результат отбора по ГЕМ
     grVR_KOM :: Maybe Bool, -- ВР_КОМ

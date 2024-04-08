@@ -29,6 +29,7 @@ library
       LoadInputData
       PrintUtf8
       Routine
+      ShowText
       Types.ExploitationStartYear
       Types.GenRegistry
       Types.KOMTG
