@@ -7,13 +7,20 @@ import PrintUtf8
 import Data.ByteString.UTF8 (fromString)
 -- import Prelude hiding (putStr, putStrLn)
 import qualified Data.ByteString.Char8 as C8 -- (putStr, putStrLn)
+import Types.KOMTG (KOMTG(..))
 
 main :: IO ()
 main = do
   env <- parseFile "config.env"
 
   inputData <- loadInputData env
-  mapM_ (\x -> (C8.putStr $ fromString $ show x) >> putStr "\n")  (take 35 $ datKOMTG inputData)
+
+
+  -- mapM_ (\x -> C8.putStr (komtgStationName x) >> (C8.putStr $ fromString $ show x) >> putStr "\n")  (take 35 $ datKOMTG inputData)
+  -- mapM_ (\x -> C8.putStr (komtgStationName  x) >> putStr "\n")  (take 35 $ datKOMTG inputData)
+
+  mapM_ (\x -> (C8.putStr $ fromString $ show x) >> putStr "\n")  (take 35 $ datSoRegistry inputData)
+
   putStrLnUtf8 "Хорошо! čušpajž日本語"
 
   -- print $ routine inputData

@@ -10,20 +10,24 @@ import qualified Data.Text as Text
 import Data.Text.Encoding
 import Types.Types
 
+import qualified Data.ByteString.UTF8 as UTF8 (fromString)
+import Data.ByteString (ByteString)
+
 data KOMTG = KOMTG
-  { komtgFilialODU :: String,
-    komtgPriseZone :: PriceZone,
+  { 
+    -- komtgFilialODU :: String,
+    -- komtgPriseZone :: PriceZone,
     komtgSubjectCode :: String,
-    komtgSubjectName :: String,
-    komtgSubjectFullName :: String,
+    -- komtgSubjectName :: String,
+    -- komtgSubjectFullName :: String,
     komtgStationCode :: String,
-    komtgStationName :: String,
+    komtgStationName :: ByteString,
     komtgGTPGCode :: String,
-    komtgGTPGName :: String,
+    -- komtgGTPGName :: String,
     komtgGEMCode :: String,
-    komtgGEMName :: String,
+    -- komtgGEMName :: String,
     komtgStationType :: StationType,
-    komtgEGOName :: String,
+    -- komtgEGOName :: String,
     komtgEGOCode :: Int,
     komtgDPMCode :: Maybe Int,
     komtgMVR :: Bool,
@@ -43,24 +47,23 @@ data KOMTG = KOMTG
     komtgGemSelectionResult :: GemSelectionResult,
     komtgMVRType :: Maybe MVRType,
     komtgYearSum :: Float
-  }
-  deriving (Show)
+  } deriving (Show)
 
 instance FromNamedRecord KOMTG where
   parseNamedRecord record = do
-    komtgFilialODU <- record .: encodeUtf8 "Филиал ОДУ"
-    komtgPriseZone <- getPriceZone <$> record .: encodeUtf8 "Код ЦЗ"
+    -- komtgFilialODU <- record .: encodeUtf8 "Филиал ОДУ"
+    -- komtgPriseZone <- getPriceZone <$> record .: encodeUtf8 "Код ЦЗ"
     komtgSubjectCode <- record .: encodeUtf8 "Код участника оптового рынка"
-    komtgSubjectName <- record .: encodeUtf8 "Участник оптового рынка"
-    komtgSubjectFullName <- record .: encodeUtf8 "Участник оптового рынка (полное наименование)"
+    -- komtgSubjectName <- record .: encodeUtf8 "Участник оптового рынка"
+    -- komtgSubjectFullName <- record .: encodeUtf8 "Участник оптового рынка (полное наименование)"
     komtgStationCode <- record .: encodeUtf8 "Код электростанции"
-    komtgStationName <- record .: encodeUtf8 "Наименование электростанции"
+    komtgStationName <- UTF8.fromString <$> record .: encodeUtf8 "Наименование электростанции"
     komtgGTPGCode <- record .: encodeUtf8 "Код ГТПГ"
-    komtgGTPGName <- record .: encodeUtf8 "Наименование ГТПГ"
+    -- komtgGTPGName <- record .: encodeUtf8 "Наименование ГТПГ"
     komtgGEMCode <- record .: encodeUtf8 "Код ГЕМ"
-    komtgGEMName <- record .: encodeUtf8 "ГЕМ"
+    -- komtgGEMName <- record .: encodeUtf8 "ГЕМ"
     komtgStationType <- getStationType <$> record .: encodeUtf8 "Тип э/ст"
-    komtgEGOName <- record .: encodeUtf8 "Наименование ЕГО"
+    -- komtgEGOName <- record .: encodeUtf8 "Наименование ЕГО"
     komtgEGOCode <- record .: encodeUtf8 "КОД ЕГО"
     komtgDPMCode <- record .: encodeUtf8 "ДПМ"
     komtgMVR <- intTextToBool <$> record .: encodeUtf8 "МВР"
@@ -82,19 +85,20 @@ instance FromNamedRecord KOMTG where
     komtgYearSum <- record .: encodeUtf8 "F32"
     pure
       KOMTG
-        { komtgFilialODU,
-          komtgPriseZone,
+        { 
+          -- komtgFilialODU,
+          -- komtgPriseZone,
           komtgSubjectCode,
-          komtgSubjectName,
-          komtgSubjectFullName,
+          -- komtgSubjectName,
+          -- komtgSubjectFullName,
           komtgStationCode,
           komtgStationName,
           komtgGTPGCode,
-          komtgGTPGName,
+          -- komtgGTPGName,
           komtgGEMCode,
-          komtgGEMName,
+          -- komtgGEMName,
           komtgStationType,
-          komtgEGOName,
+          -- komtgEGOName,
           komtgEGOCode,
           komtgDPMCode,
           komtgMVR,
@@ -116,10 +120,10 @@ instance FromNamedRecord KOMTG where
           komtgYearSum
         }
     where
-      getPriceZone :: Text -> PriceZone
-      getPriceZone "1" = EUR
-      getPriceZone "2" = SIB
-      getPriceZone other = error $ "getPriceZone wrong text: " <> Text.unpack other
+      -- getPriceZone :: Text -> PriceZone
+      -- getPriceZone "1" = EUR
+      -- getPriceZone "2" = SIB
+      -- getPriceZone other = error $ "getPriceZone wrong text: " <> Text.unpack other
 
       getStationType :: Text -> StationType
       getStationType "1" = TES
