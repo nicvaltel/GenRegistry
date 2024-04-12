@@ -1,11 +1,11 @@
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 module Types.Types where
 
-import Data.Csv (FromNamedRecord (..), (.:))
-import Data.Text.Encoding (encodeUtf8)
 import Data.Time.Calendar (Day)
+
+
+type ErrorMsg = String
+newtype Warning = Warning {unWarning :: String}
+  deriving (Show)
 
 type StationCode = String
 type Pust = Float
@@ -30,9 +30,12 @@ data GemSelectionResult
   | GSRNotSelectedMinimumTechnicalRequirements
   | GSRNotSelectedNoTechnicalSupport
   | GSRNotSelectedZeroInDecember
+  | GSRNotSelectedWithZeroYearlyVolume
   | GSRMVR
   | GSRDPM
-  deriving (Show)
+  deriving (Show, Eq)
+
+
 
 data MVRType = MVR_EE | MVR_HEAT
   deriving (Show)
@@ -49,3 +52,5 @@ data ConstantsAndDates = ConstantsAndDates
     cndMinPust :: Pust
   }
   deriving (Show)
+
+data VRParams = NotVR | ISVR {vrStartDate :: Day, vrFinishDate :: Day }

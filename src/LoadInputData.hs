@@ -25,7 +25,7 @@ data InputData = InputData
     datKOMTG :: [KOMTG],
     datSoRegistry :: [SoRegistry],
     datExploitationStartYear :: [ExploitationStartYear],
-    datYearDate :: ConstantsAndDates
+    datConstantsAndDates :: ConstantsAndDates
   } deriving (Show)
 
 parseCSV :: FromNamedRecord a => FilePath -> IO (Either ErrorMsg (CsvData a))
@@ -49,8 +49,8 @@ loadSoRegistry = parseCSV
 loadKOMTG :: FilePath -> IO (Either ErrorMsg (CsvData KOMTG))
 loadKOMTG = parseCSV
 
-mkYearDate :: [(String, String)] -> ConstantsAndDates
-mkYearDate env =
+mkConstantsAndDates :: [(String, String)] -> ConstantsAndDates
+mkConstantsAndDates env =
   case readMaybe <$> lookup "MIN_PUST" env of
     Just (Just (minPust :: Float)) ->
       case readMaybe <$> lookup "YEAR" env of
@@ -69,7 +69,7 @@ mkYearDate env =
 
 loadInputData :: [(String, String)] -> IO InputData
 loadInputData env = do
-  let datYearDate = mkYearDate env
+  let datConstantsAndDates = mkConstantsAndDates env
   let mbPathes = do  
                 rioTG <- maybeToRight "Error: no INPUT_RIO_TG filepath in config.env" (lookup "INPUT_RIO_TG" env)
                 komTG <- maybeToRight "Error: no INPUT_KOM_PO_TG filepath in config.env" (lookup "INPUT_KOM_PO_TG" env)
@@ -83,4 +83,4 @@ loadInputData env = do
       Right datExploitationStartYear <- (toList . snd <$>) <$> loadExploitationStartYear explYear
       Right datSoRegistry <- (toList . snd <$>) <$> loadSoRegistry soReg
       Right datKOMTG <- (toList . snd <$>) <$> loadKOMTG komTG
-      pure InputData {datRIOTG, datKOMTG, datSoRegistry, datExploitationStartYear, datYearDate}
+      pure InputData {datRIOTG, datKOMTG, datSoRegistry, datExploitationStartYear, datConstantsAndDates}

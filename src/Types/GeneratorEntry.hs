@@ -1,4 +1,4 @@
-module Types.GenRegistry where
+module Types.GeneratorEntry where
 
 import Data.Time.Calendar (Day)
 import Types.Types
@@ -65,7 +65,7 @@ data SupplyAttribute = NoSupply | SupplyAllYear | SupplyPeriod {supplyPeriodFrom
 -- DATA_VUVODA
 -- Комментарий
 
-data GenRegistry = GenRegistry
+data GeneratorEntry = GeneratorEntry
   { grSubject :: Text, -- Участник
     grSubjectCode :: String, -- Код участника
     grSubjectFST :: Text, -- Участник ФСТ
@@ -89,7 +89,7 @@ data GenRegistry = GenRegistry
     grGaName :: Text, -- ГА
     grGEM :: Maybe Int, -- Принадлежность к ГЕМ
     grGemSelectionResult :: GemSelectionResult, -- Результат отбора по ГЕМ
-    grVR_KOM :: Maybe Bool, -- ВР_КОМ
+    grVR_KOM :: Bool, -- ВР_КОМ
     grNotSelectedInKOM :: Bool, -- Не отобрано
     grKOMRequestAbsent :: Bool, -- Нет_заявки_КОМ
     grVRNotFromTheYearBegin :: Maybe Bool, -- ВР_не_с_начала_года

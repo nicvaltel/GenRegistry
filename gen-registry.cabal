@@ -31,7 +31,7 @@ library
       Routine
       ShowText
       Types.ExploitationStartYear
-      Types.GenRegistry
+      Types.GeneratorEntry
       Types.KOMTG
       Types.RIOTG
       Types.SoRegistry
