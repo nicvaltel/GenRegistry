@@ -51,7 +51,7 @@ data RIOTG = RIOTG
     riotgKommodFinishDate :: Maybe Day,
     riotgIsKommodSelected :: Bool,
     riotgKommodSupplyStartDate :: Maybe Day,
-    riotgIsVrZapret :: Bool,
+    riotgIsVrZapret :: Maybe Bool,
     riotgIsVyvodSoglasovan :: Bool,
     riotgVyvodDate :: Maybe Day,
     riotgIsKomNgoSelected :: Bool,
@@ -101,7 +101,7 @@ instance FromNamedRecord RIOTG where
     riotgKommodFinishDate <- getDay <$> record .: encodeUtf8 "KOMMOD_END_DATE"
     riotgIsKommodSelected <- intTextToBool <$> record .: encodeUtf8 "KOMMOD_SELECTED"
     riotgKommodSupplyStartDate <- getDay <$> record .: encodeUtf8 "KOMMOD_SUPPLY_START"
-    riotgIsVrZapret <- intTextToBool <$> record .: encodeUtf8 "IS_VR_ZAPRET"
+    riotgIsVrZapret <- intTextToMaybeBool <$> record .: encodeUtf8 "IS_VR_ZAPRET"
     riotgIsVyvodSoglasovan <- intTextToBool <$> record .: encodeUtf8 "IS_VUVOD_SOGLASOVAN"
     riotgVyvodDate <- getDay <$> record .: encodeUtf8 "DATA_VUVODA"
     riotgIsKomNgoSelected <- intTextToBool <$> record .: encodeUtf8 "IS_KOM_NGO_SELECTED"
@@ -182,11 +182,6 @@ instance FromNamedRecord RIOTG where
       getXAttrType "is_renewable_dpm" = IS_RENEWABLE_DPM
       getXAttrType other = error $ "getXAttrType wrong text: " <> Text.unpack other
 
-      --   getDay :: Text -> Maybe Day
-      --   getDay txt = case readMaybe (Text.unpack txt) of
-      --     Nothing -> traceShow txt Nothing
-      --     res -> res
-
       getDay :: Text -> Maybe Day
       getDay "" = Nothing
       getDay txt = Just . read . Text.unpack $ dateConvert "mm/dd/yyyy" "yyyy-mm-dd" txt
@@ -196,6 +191,12 @@ instance FromNamedRecord RIOTG where
       intTextToBool "1" = True
       intTextToBool "0" = False
       intTextToBool other = error $ "intTextToBool wrong text: " <> Text.unpack other
+
+      intTextToMaybeBool :: Text -> Maybe Bool
+      intTextToMaybeBool "" = Nothing
+      intTextToMaybeBool "1" = Just True
+      intTextToMaybeBool "0" = Just False
+      intTextToMaybeBool other = error $ "intTextToBool wrong text: " <> Text.unpack other
 
 instance ShowText RIOTG where
   showText

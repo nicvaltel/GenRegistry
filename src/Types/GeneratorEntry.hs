@@ -115,9 +115,9 @@ data GeneratorEntry = GeneratorEntry
     grVrTo :: Maybe Day, -- ВР до
     grKOMMODModernizationStartDate :: Maybe Day, -- KOMMOD_START_DATE
     grKOMMODModernizationEndDate :: Maybe Day, -- KOMMOD_END_DATE
-    grIsKOMMODSelected :: Maybe Bool, -- KOMMOD_SELECTED
+    grIsKOMMODSelected :: Bool, -- KOMMOD_SELECTED
     grKOMMODSupplyStart :: Maybe Day, -- KOMMOD_SUPPLY_START
-    grIsVRProhibit :: Bool, -- IS_VR_ZAPRET
+    grIsVRProhibit :: Maybe Bool, -- IS_VR_ZAPRET
     grIsVyvodSoglasovan :: Bool, -- IS_VUVOD_SOGLASOVAN
     grVyvodSoglasovanDate :: Maybe Day, -- DATA_VUVODA
     grComment :: String -- Комментарий

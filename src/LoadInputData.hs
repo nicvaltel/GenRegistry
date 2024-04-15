@@ -5,16 +5,16 @@ module LoadInputData where
 
 import qualified Data.ByteString.Lazy as BL
 import Data.Csv (FromNamedRecord, Header, decodeByName)
+import Data.Either.Combinators (maybeToRight)
 import Data.Time (fromGregorian)
 import Data.Vector (toList)
 import qualified Data.Vector as V
 import Text.Read (readMaybe)
-import Types.KOMTG (KOMTG)
-import Types.RIOTG ( RIOTG )
-import Types.SoRegistry (SoRegistry)
-import Types.Types ( ConstantsAndDates(..) )
 import Types.ExploitationStartYear (ExploitationStartYear)
-import Data.Either.Combinators(maybeToRight)
+import Types.KOMTG (KOMTG)
+import Types.RIOTG (RIOTG)
+import Types.SoRegistry (SoRegistry)
+import Types.Types (ConstantsAndDates (..))
 
 type ErrorMsg = String
 
@@ -26,7 +26,8 @@ data InputData = InputData
     datSoRegistry :: [SoRegistry],
     datExploitationStartYear :: [ExploitationStartYear],
     datConstantsAndDates :: ConstantsAndDates
-  } deriving (Show)
+  }
+  deriving (Show)
 
 parseCSV :: FromNamedRecord a => FilePath -> IO (Either ErrorMsg (CsvData a))
 parseCSV filePath = do
@@ -51,10 +52,12 @@ loadKOMTG = parseCSV
 
 mkConstantsAndDates :: [(String, String)] -> ConstantsAndDates
 mkConstantsAndDates env =
-  case readMaybe <$> lookup "MIN_PUST" env of
-    Just (Just (minPust :: Float)) ->
-      case readMaybe <$> lookup "YEAR" env of
-        Just (Just (year :: Integer)) ->
+  let mbConstantsAndDates :: Either String ConstantsAndDates = do
+        minPust :: Float <- maybe (Left "MIN_PUST field is abscent or incorrect in config.env file") (Right . read) (lookup "MIN_PUST" env)
+        year :: Integer <- maybe (Left "YEAR field is abscent or incorrect in config.env file") (Right . read) (lookup "MIN_PUST" env)
+        year2007 :: Int <- maybe (Left "YEAR_2007 field is abscent or incorrect in config.env file") (Right . read) (lookup "YEAR_2007" env)
+        year2011 :: Int <- maybe (Left "YEAR_2011 field is abscent or incorrect in config.env file") (Right . read) (lookup "YEAR_2011" env)
+        Right $
           ConstantsAndDates
             { cndYear = fromIntegral year,
               cndVrBanDate = fromGregorian (year - 1) 10 15,
@@ -62,20 +65,23 @@ mkConstantsAndDates env =
               cndFinishYearDate = fromGregorian year 12 31,
               cndFirstApril = fromGregorian year 4 1,
               cndSecondTermDate = fromGregorian year 7 1,
-              cndMinPust = minPust
+              cndMinPust = minPust,
+              cndYear2007 = year2007,
+              cndYear2011 = year2011
             }
-        _ -> error "YEAR field is abscent or incorrect in config.env file"
-    _ -> error "MIN_PUST field is abscent or incorrect in config.env file"
+   in case mbConstantsAndDates of
+        Right constantsAndDates -> constantsAndDates
+        Left err -> error err
 
 loadInputData :: [(String, String)] -> IO InputData
 loadInputData env = do
   let datConstantsAndDates = mkConstantsAndDates env
-  let mbPathes = do  
-                rioTG <- maybeToRight "Error: no INPUT_RIO_TG filepath in config.env" (lookup "INPUT_RIO_TG" env)
-                komTG <- maybeToRight "Error: no INPUT_KOM_PO_TG filepath in config.env" (lookup "INPUT_KOM_PO_TG" env)
-                soReg <- maybeToRight "Error: no INPUT_SO_REGISTRY filepath in config.env" (lookup "INPUT_SO_REGISTRY" env)
-                explYear <- maybeToRight "Error: no INPUT_GA_2007_2011 filepath in config.env" (lookup "INPUT_GA_2007_2011" env)
-                pure (rioTG, komTG, soReg, explYear)
+  let mbPathes = do
+        rioTG <- maybeToRight "Error: no INPUT_RIO_TG filepath in config.env" (lookup "INPUT_RIO_TG" env)
+        komTG <- maybeToRight "Error: no INPUT_KOM_PO_TG filepath in config.env" (lookup "INPUT_KOM_PO_TG" env)
+        soReg <- maybeToRight "Error: no INPUT_SO_REGISTRY filepath in config.env" (lookup "INPUT_SO_REGISTRY" env)
+        explYear <- maybeToRight "Error: no INPUT_GA_2007_2011 filepath in config.env" (lookup "INPUT_GA_2007_2011" env)
+        pure (rioTG, komTG, soReg, explYear)
   case mbPathes of
     Left errMsg -> error errMsg
     Right (rioTG, komTG, soReg, explYear) -> do

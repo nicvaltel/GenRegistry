@@ -49,8 +49,24 @@ data ConstantsAndDates = ConstantsAndDates
     cndFinishYearDate :: Day,
     cndFirstApril :: Day,
     cndSecondTermDate :: Day,
-    cndMinPust :: Pust
+    cndMinPust :: Pust,
+    cndYear2007 :: Int,
+    cndYear2011 :: Int
   }
   deriving (Show)
 
-data VRParams = NotVR | ISVR {vrStartDate :: Day, vrFinishDate :: Day }
+type GaCode = Int
+
+type GaCode2007_2011 = GaCode
+
+data VRParams = VRParams {vrStartDate :: Day, vrFinishDate :: Day, vrIsVrZapret :: Bool, vr2007_2011 :: Bool }
+
+data DPMParams = DPMParams {dpmStartDate :: Day, dpmFinishDate :: Day }
+
+data KommodParams = KommodParams {kommodStartDate :: Day, kommodFinishDate :: Day, kommodSupplyStartDate :: Day }
+
+data NGOParams = NGOParams {ngoStartDate :: Day, ngoFinishDate :: Day}
+
+newtype RPRF2699Params = RPRF2699Params {rprf2699StartDate :: Day}
+
+newtype VyvodSoglasovan = VyvodSoglasovan {vyvodSoglasovanDate :: Day}
