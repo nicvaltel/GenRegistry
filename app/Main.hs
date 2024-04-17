@@ -2,14 +2,13 @@ module Main (main) where
 
 import Configuration.Dotenv (parseFile)
 import LoadInputData
-import PrintUtf8
+import Utils
 import qualified Data.Text.IO as T
 
 import Data.ByteString.UTF8 (fromString)
-import qualified Data.ByteString.Char8 as C8 -- (putStr, putStrLn)
+import qualified Data.ByteString.Char8 as C8
 import Types.KOMTG (KOMTG(..))
 import Data.Text.Encoding (encodeUtf8)
-import ShowText (showText)
 import Routine (routine)
 import Control.Monad.Writer (runWriter)
 

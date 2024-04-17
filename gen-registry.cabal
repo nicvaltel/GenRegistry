@@ -25,11 +25,8 @@ source-repository head
 library
   exposed-modules:
       GaMonthly.GaMonthly
-      Lib
       LoadInputData
-      PrintUtf8
       Routine
-      ShowText
       Types.ExploitationStartYear
       Types.GeneratorEntry
       Types.KOMTG

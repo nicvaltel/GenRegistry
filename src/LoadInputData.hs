@@ -1,7 +1,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module LoadInputData where
+module LoadInputData (loadInputData, InputData (..)) where
 
 import qualified Data.ByteString.Lazy as BL
 import Data.Csv (FromNamedRecord, Header, decodeByName)
@@ -9,7 +9,6 @@ import Data.Either.Combinators (maybeToRight)
 import Data.Time (fromGregorian)
 import Data.Vector (toList)
 import qualified Data.Vector as V
-import Text.Read (readMaybe)
 import Types.ExploitationStartYear (ExploitationStartYear)
 import Types.KOMTG (KOMTG)
 import Types.RIOTG (RIOTG)

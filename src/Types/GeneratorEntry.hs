@@ -1,69 +1,8 @@
-module Types.GeneratorEntry where
+module Types.GeneratorEntry (GeneratorEntry (..)) where
 
+import Data.Text (Text)
 import Data.Time.Calendar (Day)
 import Types.Types
-import Data.Text (Text)
-
-data SupplyAttribute = NoSupply | SupplyAllYear | SupplyPeriod {supplyPeriodFrom :: Day, supplyPeriodTo :: Day}
-  deriving (Show, Eq)
-
--- Участник
--- Код участника
--- Участник ФСТ
--- Код участника ФСТ
--- Станция
--- Код станции
--- Тип станции
--- ГТП
--- Код ГТП
--- Признак неценовой зоны
--- Ценовая зона
--- установленная мощность
--- выход_на_спот
--- характер_экспл
--- IS_DPM
--- Регион_РФ
--- ОЭС
--- ЗСП
--- Код РГЕ
--- Код ГА
--- ГА
--- Принадлежность к ГЕМ
--- Результат отбора по ГЕМ
--- --КОМ
--- ВР_КОМ
--- Не отобрано
--- Нет_заявки_КОМ
--- ВР_не_с_начала_года
--- ВР_не_до_конца_года
--- ВР_не_учтён_в_КОМ
--- --ВР_2007_2011
--- Дата_начала_поставки_ДПМ
--- Дата_решения_о_запрете(ВР)
--- Группа_КОМ
--- Группа_КОММОД
--- Группа_ДПМ
--- Группа_НГО
--- Группа_РПРФ2699p
--- Группа_ВР_с_МЩ_весь_год
--- Группа_ВР_2007-2011
--- Группа_ВР_после_15_октября
--- Группа_ВР_не_весь_год
--- Поставка_ЭЭ_по_РД
--- Поставка_МЩ_по_РД
--- Руст_станции
--- IS_NEW_GES_AES
--- IS_VR
--- ВР c
--- ВР до
--- KOMMOD_START_DATE
--- KOMMOD_END_DATE
--- KOMMOD_SELECTED
--- KOMMOD_SUPPLY_START
--- IS_VR_ZAPRET
--- IS_VUVOD_SOGLASOVAN
--- DATA_VUVODA
--- Комментарий
 
 data GeneratorEntry = GeneratorEntry
   { grSubject :: Text, -- Участник

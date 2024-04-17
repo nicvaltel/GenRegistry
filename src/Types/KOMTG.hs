@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Types.KOMTG where
+module Types.KOMTG (KOMTG(..)) where
 
 import Data.Csv (FromNamedRecord (..), (.:))
 import Data.Text (Text)
@@ -11,8 +11,7 @@ import Data.Text.Encoding
 import Types.Types
 
 data KOMTG = KOMTG
-  { 
-    -- komtgFilialODU :: String,
+  { -- komtgFilialODU :: String,
     -- komtgPriseZone :: PriceZone,
     komtgSubjectCode :: String,
     -- komtgSubjectName :: String,
@@ -44,7 +43,8 @@ data KOMTG = KOMTG
     komtgGemSelectionResult :: GemSelectionResult,
     komtgMVRType :: Maybe MVRType,
     komtgYearSum :: Float
-  } deriving (Show)
+  }
+  deriving (Show)
 
 instance FromNamedRecord KOMTG where
   parseNamedRecord record = do
@@ -82,8 +82,7 @@ instance FromNamedRecord KOMTG where
     komtgYearSum <- record .: encodeUtf8 "F32"
     pure
       KOMTG
-        { 
-          -- komtgFilialODU,
+        { -- komtgFilialODU,
           -- komtgPriseZone,
           komtgSubjectCode,
           -- komtgSubjectName,

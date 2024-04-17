@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Types.SoRegistry where
+module Types.SoRegistry (SoRegistry (..)) where
 
 import Data.Csv (FromNamedRecord (..), (.:))
 import Data.Text (Text)

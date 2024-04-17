@@ -1,4 +1,3 @@
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
@@ -6,31 +5,17 @@ module Routine (routine) where
 
 import Control.Monad.Writer (MonadWriter (tell), Writer, when)
 import Data.Char (toUpper)
-import Data.Either (lefts, partitionEithers)
 import Data.List (group, nub, sort)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Data.Maybe (fromMaybe, isJust, isNothing)
-import Debug.Trace (traceShow)
 import LoadInputData (InputData (..))
 import Types.ExploitationStartYear (ExploitationStartYear (..))
-import Types.GeneratorEntry (GeneratorEntry (..), SupplyAttribute (..))
+import Types.GeneratorEntry (GeneratorEntry (..))
 import Types.KOMTG (KOMTG (..))
 import Types.RIOTG (RIOTG (..))
 import Types.SoRegistry (SoRegistry (..))
 import Types.Types
-
--- data Regestry a = Regestry {regWarnings :: [Warning], regEntryes :: [a]}
-
--- instance Semigroup (Regestry a) where
---   reg0 <> reg1 =
---     Regestry {regWarnings = regWarnings reg0 ++ regWarnings reg1 , regEntryes = regEntryes reg0 ++ regEntryes reg1}
-
--- instance Monoid (Regestry a) where
---   mempty = Regestry{regWarnings = [], regEntryes = []}
-
--- singletonReg :: a -> Regestry a
--- singletonReg a = Regestry {regWarnings = [], regEntryes = [a]}
 
 routine :: InputData -> Writer [Warning] (Either [ErrorMsg] [GeneratorEntry])
 routine inputData@InputData {datRIOTG, datKOMTG, datSoRegistry, datExploitationStartYear, datConstantsAndDates} = do
@@ -38,16 +23,8 @@ routine inputData@InputData {datRIOTG, datKOMTG, datSoRegistry, datExploitationS
   tgs <- case filterAndCheckInputData inputData of
     Right tgs -> pure $ Right tgs
     Left err -> pure $ Left [err]
-  -- let res = map (`mkPreliminaryGenReg` datKOMTG) tgs
 
-  -- -- getRegPre <- mkPreliminaryGenRegistry tgs2
-
-  -- traceShow res $ pure ()
   pure $ Right []
-
--- case partitionEithers res of
---   ([],ans) -> pure ans
---   (errs,_) -> Left errs
 
 filterAndCheckInputData :: InputData -> Either ErrorMsg [RIOTG]
 filterAndCheckInputData InputData {datRIOTG, datKOMTG, datSoRegistry, datExploitationStartYear, datConstantsAndDates} = do
@@ -149,7 +126,7 @@ mkRPRF2699Params rio =
       pure $ (\start -> RPRF2699Params {rprf2699StartDate = start}) <$> riotgRprf2699StartDate rio
 
 mkVyvodSoglasovan :: RIOTG -> Writer [Warning] (Maybe VyvodSoglasovan)
-mkVyvodSoglasovan rio = 
+mkVyvodSoglasovan rio =
   if not (riotgIsVyvodSoglasovan rio)
     then pure Nothing
     else do
@@ -165,23 +142,23 @@ mkGeneratorEntry ::
   Maybe DPMParams ->
   Maybe KommodParams ->
   Maybe NGOParams ->
-  Maybe RPRF2699Params -> 
+  Maybe RPRF2699Params ->
   Maybe VyvodSoglasovan ->
   Writer [Warning] (Either ErrorMsg GeneratorEntry)
-mkGeneratorEntry ConstantsAndDates {cndStartYearDate, cndFinishYearDate, cndVrBanDate} riotg komtg soReg vr dpm kommod ngo rprf2699 vyvodSoglasovan= do
+mkGeneratorEntry ConstantsAndDates {cndStartYearDate, cndFinishYearDate, cndVrBanDate} riotg komtg soReg vr dpm kommod ngo rprf2699 vyvodSoglasovan = do
   let isVR = isJust vr
   let isDPM = isJust dpm
   let isKOMMod = isJust kommod
 
   let isKOM -- TODO update by query  -- Группа_КОМ
-          =
-            isSelectedKom (komtgGemSelectionResult komtg)
-              || and
-                [ komtgGemSelectionResult komtg == GSRDPM,
-                  isNothing dpm,
-                  not $ riotgIsNewGesAes riotg,
-                  isNothing kommod
-                ]
+        =
+        isSelectedKom (komtgGemSelectionResult komtg)
+          || and
+            [ komtgGemSelectionResult komtg == GSRDPM,
+              isNothing dpm,
+              not $ riotgIsNewGesAes riotg,
+              isNothing kommod
+            ]
 
   let vrKOM = komtgGemSelectionResult komtg == GSRMVR -- ВР_КОМ
   let vrProhibitDecisionDate = case vr of -- Дата_решения_о_запрете(ВР)
@@ -189,18 +166,17 @@ mkGeneratorEntry ConstantsAndDates {cndStartYearDate, cndFinishYearDate, cndVrBa
         Nothing -> Nothing
 
   -- Группа_ВР_с_МЩ_весь_год:
-          -- IIf (IsNull ([Дата_решения_о_запрете(ВР)]);
-          --         IIf ([ВР_КОМ]=1 And [ВР_2007_2011]=0;1;0);
-          --         IIf (([ВР_КОМ]=1 Or (([Дата_решения_о_запрете(ВР)])<=[дата_запрета_на_ВР])) And [ВР_2007_2011]=0;1;0)
-          --     )
+  -- IIf (IsNull ([Дата_решения_о_запрете(ВР)]);
+  --         IIf ([ВР_КОМ]=1 And [ВР_2007_2011]=0;1;0);
+  --         IIf (([ВР_КОМ]=1 Or (([Дата_решения_о_запрете(ВР)])<=[дата_запрета_на_ВР])) And [ВР_2007_2011]=0;1;0)
+  --     )
   let vrWithAllYearCapacity -- Группа_ВР_с_МЩ_весь_год
-          =
-            case vr of
-              Nothing -> Nothing
-              Just vrparams -> case vrProhibitDecisionDate of
-                Nothing -> Just (vrKOM && not (vr2007_2011 vrparams)) -- IIf([ВР_КОМ]=1 And [ВР_2007_2011]=0;1;0)
-                Just prohibitDecisionDay -> Just $ vrKOM || (prohibitDecisionDay <= cndVrBanDate && not (vr2007_2011 vrparams)) -- IIf(([ВР_КОМ]=1 Or (([Дата_решения_о_запрете(ВР)])<=[дата_запрета_на_ВР])) And [ВР_2007_2011]=0;1;0)
-
+        =
+        case vr of
+          Nothing -> Nothing
+          Just vrparams -> case vrProhibitDecisionDate of
+            Nothing -> Just (vrKOM && not (vr2007_2011 vrparams)) -- IIf([ВР_КОМ]=1 And [ВР_2007_2011]=0;1;0)
+            Just prohibitDecisionDay -> Just $ vrKOM || (prohibitDecisionDay <= cndVrBanDate && not (vr2007_2011 vrparams)) -- IIf(([ВР_КОМ]=1 Or (([Дата_решения_о_запрете(ВР)])<=[дата_запрета_на_ВР])) And [ВР_2007_2011]=0;1;0)
   let selectedYearVol = komYearSelectedVolume komtg
   pure $
     Right $
@@ -250,9 +226,10 @@ mkGeneratorEntry ConstantsAndDates {cndStartYearDate, cndFinishYearDate, cndVrBa
           grVRafter15october = case vr of -- Группа_ВР_после_15_октября
             Nothing -> Nothing
             Just _ -> Just $ maybe False (>= cndVrBanDate) vrProhibitDecisionDate,
-          grVRNotAllYear = (\v -> vrFinishDate v < cndFinishYearDate || vrStartDate v > cndStartYearDate) <$> vr , -- Группа_ВР_не_весь_год
+          grVRNotAllYear = (\v -> vrFinishDate v < cndFinishYearDate || vrStartDate v > cndStartYearDate) <$> vr, -- Группа_ВР_не_весь_год
           grEESupply = SupplyAllYear, -- SupplyAttribute, -- Поставка_ЭЭ_по_РД
-          grPWSupply = -- SupplyAttribute, -- Поставка_МЩ_по_РД: IIf(([Группа_КОМ]=1 Or [Группа_КОММОД]=1 Or [Группа_ВР_с_МЩ_весь_год]=1) And [Группа_РПРФ2699p]<>1;1;0)
+          grPWSupply -- SupplyAttribute, -- Поставка_МЩ_по_РД: IIf(([Группа_КОМ]=1 Or [Группа_КОММОД]=1 Or [Группа_ВР_с_МЩ_весь_год]=1) And [Группа_РПРФ2699p]<>1;1;0)
+          =
             if isNothing rprf2699 && (isKOM || isJust kommod || fromMaybe False vrWithAllYearCapacity)
               then SupplyAllYear
               else NoSupply,
@@ -261,7 +238,7 @@ mkGeneratorEntry ConstantsAndDates {cndStartYearDate, cndFinishYearDate, cndVrBa
           grIsVr = isVR, -- IS_VR
           grVrFrom = vrStartDate <$> vr, -- Maybe Day, -- ВР c
           grVrTo = vrFinishDate <$> vr, -- ВР до
-          grKOMMODModernizationStartDate = kommodStartDate <$> kommod , -- Maybe Day, -- KOMMOD_START_DATE
+          grKOMMODModernizationStartDate = kommodStartDate <$> kommod, -- Maybe Day, -- KOMMOD_START_DATE
           grKOMMODModernizationEndDate = kommodFinishDate <$> kommod, -- Maybe Day, -- KOMMOD_END_DATE
           grIsKOMMODSelected = isJust kommod, -- KOMMOD_SELECTED
           grKOMMODSupplyStart = kommodSupplyStartDate <$> kommod, -- KOMMOD_SUPPLY_START
