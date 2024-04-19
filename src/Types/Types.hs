@@ -9,9 +9,11 @@ class ShowText a where
 type ErrorMsg = String
 
 newtype Warning = Warning {unWarning :: String}
-  deriving (Show)
+  deriving (Show, Eq, Ord)
 
 type StationCode = String
+
+type GTPGCode = String
 
 type Pust = Float
 

@@ -53,7 +53,7 @@ mkConstantsAndDates :: [(String, String)] -> ConstantsAndDates
 mkConstantsAndDates env =
   let mbConstantsAndDates :: Either String ConstantsAndDates = do
         minPust :: Float <- maybe (Left "MIN_PUST field is abscent or incorrect in config.env file") (Right . read) (lookup "MIN_PUST" env)
-        year :: Integer <- maybe (Left "YEAR field is abscent or incorrect in config.env file") (Right . read) (lookup "MIN_PUST" env)
+        year :: Integer <- maybe (Left "YEAR field is abscent or incorrect in config.env file") (Right . read) (lookup "YEAR" env)
         year2007 :: Int <- maybe (Left "YEAR_2007 field is abscent or incorrect in config.env file") (Right . read) (lookup "YEAR_2007" env)
         year2011 :: Int <- maybe (Left "YEAR_2011 field is abscent or incorrect in config.env file") (Right . read) (lookup "YEAR_2011" env)
         Right $

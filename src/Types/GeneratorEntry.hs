@@ -13,10 +13,10 @@ data GeneratorEntry = GeneratorEntry
     grStationCode :: StationCode, -- Код станции
     grStationType :: StationType, -- Тип станции
     grGTPGname :: Text, -- ГТП
-    grGTPGCode :: String, -- Код ГТП
+    grGTPGCode :: GTPGCode, -- Код ГТП
     grUnpriceZoneCode :: Maybe Int, -- Признак неценовой зоны
     grPriceZone :: PriceZone, -- Ценовая зона
-    grPust :: Pust, -- установленная мощность
+    grPustGTPG :: Pust, -- установленная мощность ГТПГ
     grIsSpotTrader :: Bool, -- выход_на_спот
     grIsExploitationTypeNormal :: Bool, -- характер_экспл
     grIsDPM :: Bool, -- IS_DPM

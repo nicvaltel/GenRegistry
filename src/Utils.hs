@@ -1,9 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Utils (dateConvert, putStrUtf8, putStrLnUtf8, putTextUtf8, putTextLnUtf8) where
+module Utils (dateConvert, putStrUtf8, putStrLnUtf8, putTextUtf8, putTextLnUtf8, countElems) where
 
 import qualified Data.ByteString.Char8 as C8 (putStr, putStrLn)
 import Data.ByteString.UTF8 (fromString)
+import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Encoding (encodeUtf8)
@@ -31,3 +32,8 @@ putTextUtf8 = C8.putStr . encodeUtf8
 
 putTextLnUtf8 :: Text -> IO ()
 putTextLnUtf8 = C8.putStrLn . encodeUtf8
+
+countElems :: (Ord a) => [a] -> [(a, Int)]
+countElems xs =
+  Map.toList $
+    foldr (\x m -> case Map.lookup x m of Just n -> Map.insert x (n + 1) m; Nothing -> Map.insert x 1 m) Map.empty xs

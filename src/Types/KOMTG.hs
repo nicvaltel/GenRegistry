@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Types.KOMTG (KOMTG(..)) where
+module Types.KOMTG (KOMTG (..)) where
 
 import Data.Csv (FromNamedRecord (..), (.:))
 import Data.Text (Text)
@@ -24,7 +24,7 @@ data KOMTG = KOMTG
     -- komtgGEMName :: String,
     komtgStationType :: StationType,
     -- komtgEGOName :: String,
-    komtgEGOCode :: Int,
+    komtgEGOCode :: GaCode,
     komtgDPMCode :: Maybe Int,
     komtgMVR :: Bool,
     komtgJan :: Maybe Float,
