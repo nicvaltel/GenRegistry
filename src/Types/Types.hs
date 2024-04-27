@@ -40,6 +40,10 @@ data GemSelectionResult
   | GSRNotSelectedWithZeroYearlyVolume
   | GSRMVR
   | GSRDPM
+  | GSRKommod
+  | GSRKomNgo
+  | GSRSelectedRPRF2699
+  | GSRisNull
   deriving (Show, Eq)
 
 data MVRType = MVR_EE | MVR_HEAT
@@ -76,3 +80,13 @@ newtype VyvodSoglasovan = VyvodSoglasovan {vyvodSoglasovanDate :: Day}
 
 data SupplyAttribute = NoSupply | SupplyAllYear | SupplyPeriod {supplyPeriodFrom :: Day, supplyPeriodTo :: Day}
   deriving (Show, Eq)
+
+supplyAttributeIntersection :: SupplyAttribute -> SupplyAttribute -> SupplyAttribute
+supplyAttributeIntersection NoSupply _ = NoSupply
+supplyAttributeIntersection _ NoSupply = NoSupply
+supplyAttributeIntersection SupplyAllYear s = s
+supplyAttributeIntersection s SupplyAllYear = s
+supplyAttributeIntersection sp1 sp2 | supplyPeriodFrom sp1 > supplyPeriodTo sp2 = NoSupply
+supplyAttributeIntersection sp1 sp2 | supplyPeriodTo sp1 < supplyPeriodFrom sp2 = NoSupply
+supplyAttributeIntersection sp1 sp2 = 
+  SupplyPeriod {supplyPeriodFrom = max (supplyPeriodFrom sp1) (supplyPeriodFrom sp2), supplyPeriodTo = min (supplyPeriodTo sp1) (supplyPeriodTo sp2)}

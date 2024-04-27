@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Routine (routine) where
 
@@ -11,6 +12,7 @@ import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Data.Maybe (fromMaybe, isJust, isNothing)
 import qualified Data.Set as Set
+import qualified Data.Text as Text
 import Data.Time.Calendar (Day)
 import LoadInputData (InputData (..))
 import Types.ExploitationStartYear (ExploitationStartYear (..))
@@ -26,23 +28,29 @@ routine inputData@InputData {datRIOTG, datKOMTG, datSoRegistry, datExploitationS
   -- TODO check that VR in RIO the same as in KOM_PO_TG (МВР /= 0)
   -- TODO check that Pust in RIO the same as in SO
   -- TODO unique EGOCode in datKOMTG
+  -- TODO change cnd to Reader
+  -- TODO change SupplyPeriod to [SupplyPeriod] and intersect them at the end
+  -- TODO change SupplyPeriod to SupplyPeriod 'EE and 'PW
 
   (pustStations, pustGTPGs) <- getPust datRIOTG datSoRegistry
   let tgs = either error id (filterAndCheckInputData inputData pustStations)
   let vr2007_2011 = mkVR2007_2011 datConstantsAndDates datRIOTG datExploitationStartYear
   let komMap = Map.fromList $ map (\k -> (komtgEGOCode k, k)) datKOMTG
 
-  forM tgs $ \rio -> do
-    let mbkom = Map.lookup (riotgGaCode rio) komMap
-    let pustSt = fromMaybe (error $ "No Pust for Station = " ++ riotgStationCode rio) (Map.lookup (riotgStationCode rio) pustStations)
-    let pustGTPG = fromMaybe (error $ "No Pust for GTPG = " ++ riotgGTPCode rio) (Map.lookup (riotgGTPCode rio) pustGTPGs)
-    vrParams <- mkVRParams rio vr2007_2011
-    dpmParams <- mkDPMParams rio
-    kommodParams <- mkKommodParams (cndStartYearDate datConstantsAndDates) rio
-    ngoParams <- mkNGOParams rio
-    rprf2699Params <- mkRPRF2699Params rio
-    vyvodSoglasovan <- mkVyvodSoglasovan rio
-    mkGeneratorEntry datConstantsAndDates rio mbkom pustSt pustGTPG vrParams dpmParams kommodParams ngoParams rprf2699Params vyvodSoglasovan
+  gs <- forM tgs $ \rio -> do
+      let mbkom = Map.lookup (riotgGaCode rio) komMap
+      let pustSt = fromMaybe (error $ "No Pust for Station = " ++ riotgStationCode rio) (Map.lookup (riotgStationCode rio) pustStations)
+      let pustGTPG = fromMaybe (error $ "No Pust for GTPG = " ++ riotgGTPCode rio) (Map.lookup (riotgGTPCode rio) pustGTPGs)
+      vrParams <- mkVRParams rio vr2007_2011
+      dpmParams <- mkDPMParams rio
+      kommodParams <- mkKommodParams (cndStartYearDate datConstantsAndDates) rio
+      ngoParams <- mkNGOParams rio
+      rprf2699Params <- mkRPRF2699Params rio
+      vyvodSoglasovan <- mkVyvodSoglasovan rio
+      gePrelim <- mkGeneratorEntryPreliminarily datConstantsAndDates rio mbkom pustSt pustGTPG vrParams dpmParams kommodParams ngoParams rprf2699Params vyvodSoglasovan
+      pure $ updateGeneratorEntry datConstantsAndDates gePrelim mbkom vrParams kommodParams
+  pure $ concatMap (doubleDPM datConstantsAndDates) gs
+
 
 filterAndCheckInputData :: InputData -> Map StationCode Pust -> Either ErrorMsg [RIOTG]
 filterAndCheckInputData InputData {datRIOTG, datKOMTG, datSoRegistry, datExploitationStartYear = _, datConstantsAndDates} pustStations = do
@@ -172,7 +180,7 @@ mkVyvodSoglasovan rio =
       when (isNothing $ riotgVyvodDate rio) $ tell [Warning $ "No soglasovanniy vyvod date for GTP = " ++ riotgGTPCode rio ++ " GA = " ++ show (riotgGaCode rio)]
       pure $ (\start -> VyvodSoglasovan {vyvodSoglasovanDate = start}) <$> riotgVyvodDate rio
 
-mkGeneratorEntry ::
+mkGeneratorEntryPreliminarily ::
   ConstantsAndDates ->
   RIOTG ->
   Maybe KOMTG ->
@@ -185,7 +193,7 @@ mkGeneratorEntry ::
   Maybe RPRF2699Params ->
   Maybe VyvodSoglasovan ->
   Writer [Warning] GeneratorEntry
-mkGeneratorEntry ConstantsAndDates {cndStartYearDate, cndFinishYearDate, cndVrBanDate} riotg mbkom pustStation pustGTPG vr dpm kommod ngo rprf2699 vyvodSoglasovan = do
+mkGeneratorEntryPreliminarily ConstantsAndDates {cndStartYearDate, cndFinishYearDate, cndVrBanDate} riotg mbkom pustStation pustGTPG vr dpm kommod ngo rprf2699 vyvodSoglasovan = do
   let isKOM -- TODO update by query  -- Группа_КОМ
         =
         case mbkom of
@@ -219,32 +227,32 @@ mkGeneratorEntry ConstantsAndDates {cndStartYearDate, cndFinishYearDate, cndVrBa
   let selectedYearVol = maybe 0 komYearSelectedVolume mbkom
   pure
     GeneratorEntry
-      { grSubject = riotgSubject riotg,
-        grSubjectCode = riotgSubjectCode riotg,
-        grSubjectFST = riotgSubjectFST riotg,
-        grSubjectFSTCode = riotgSubjectFSTCode riotg,
-        grStationName = riotgStationName riotg,
-        grStationCode = riotgStationCode riotg,
-        grStationType = riotgStationType riotg,
-        grGTPGname = riotgGTPName riotg,
-        grGTPGCode = riotgGTPCode riotg,
-        grUnpriceZoneCode = riotgIsUnpriceZone riotg,
-        grPriceZone = riotgPriceZone riotg,
-        grPustGTPG = pustGTPG, -- riotgPust riotg,
-        grIsSpotTrader = riotgIsSpotTrader riotg,
-        grIsExploitationTypeNormal = riotgIsExploitationTypeNormal riotg,
-        grIsDPM = riotgIsDPM riotg,
-        grRegionRFCode = riotgRegionRFCode riotg,
-        grOES = riotgOES riotg,
-        grZSP = riotgZSP riotg,
-        grRGECode = riotgRgeCode riotg,
-        grGACode = riotgGaCode riotg,
-        grGaName = riotgGaName riotg,
+      { grSubject = riotgSubject riotg, -- Участник
+        grSubjectCode = riotgSubjectCode riotg, -- Код участника
+        grSubjectFST = riotgSubjectFST riotg, -- Участник ФСТ
+        grSubjectFSTCode = riotgSubjectFSTCode riotg, -- Код участника ФСТ
+        grStationName = riotgStationName riotg, -- Станция
+        grStationCode = riotgStationCode riotg, -- Код станции
+        grStationType = riotgStationType riotg, -- Тип станции
+        grGTPGname = riotgGTPName riotg, -- ГТП
+        grGTPGCode = riotgGTPCode riotg, -- Код ГТП
+        grUnpriceZoneCode = riotgIsUnpriceZone riotg, -- Признак неценовой зоны
+        grPriceZone = riotgPriceZone riotg, -- Ценовая зона
+        grPustGTPG = pustGTPG, -- riotgPust riotg, -- установленная мощность ГТПГ
+        grIsSpotTrader = riotgIsSpotTrader riotg, -- выход_на_спот
+        grIsExploitationTypeNormal = riotgIsExploitationTypeNormal riotg, -- характер_экспл
+        grIsDPM = riotgIsDPM riotg, -- IS_DPM
+        grRegionRFCode = riotgRegionRFCode riotg, -- Регион_РФ
+        grOES = riotgOES riotg, -- ОЭС
+        grZSP = riotgZSP riotg, -- ЗСП
+        grRGECode = riotgRgeCode riotg, -- Код РГЕ
+        grGACode = riotgGaCode riotg, -- Код ГА
+        grGaName = riotgGaName riotg, -- ГА
         grGEM = riotgGEM riotg, -- Принадлежность к ГЕМ
         grGemSelectionResult -- Результат отбора по ГЕМ
         =
           maybe
-            GSRNotSelected
+            GSRisNull
             ( \kom ->
                 if isSelectedKom (komtgGemSelectionResult kom) && selectedYearVol == 0
                   then GSRNotSelectedWithZeroYearlyVolume
@@ -252,16 +260,17 @@ mkGeneratorEntry ConstantsAndDates {cndStartYearDate, cndFinishYearDate, cndVrBa
             )
             mbkom,
         grVR_KOM = vrKOM, -- ВР_КОМ
-        grNotSelectedInKOM = maybe True (\kom -> isSelectedKom (komtgGemSelectionResult kom) && selectedYearVol > 0) mbkom, -- Не отобрано
+        grNotSelectedInKOM = maybe True (\kom -> not (isSelectedKom (komtgGemSelectionResult kom) && selectedYearVol > 0)) mbkom, -- Не отобрано
         grKOMRequestAbsent = maybe False (\kom -> komtgGemSelectionResult kom == GSRNotSelectedRefusalToFillRequest) mbkom, -- Нет_заявки_КОМ
         grVRNotFromTheYearBegin = (\v -> vrStartDate v > cndStartYearDate) <$> vr,
         grVRNotUntilTheYearEnd = (\v -> vrFinishDate v < cndFinishYearDate) <$> vr,
         grVRNotCondideredInKOM = (\_ -> maybe True (\kom -> komtgGemSelectionResult kom /= GSRMVR) mbkom) <$> vr, -- ВР_не_учтён_в_КОМ
         grDpmStartDate = dpmStartDate <$> dpm, -- Дата_начала_поставки_ДПМ
+        grDpmFinishDate = dpmFinishDate <$> dpm, -- Дата окончания поставки ДПМ (новое поле)
         grVRProhibitDecisionDate = vrProhibitDecisionDate, -- Дата_решения_о_запрете(ВР)
         grKOM = isKOM, -- Группа_КОМ
         grKOMMOD = maybe False (\k -> kommodSupplyStartDate k <= cndFinishYearDate) kommod,
-        grDPM = isJust dpm, -- Группа_ДПМ
+        grDPM = isJust dpm || riotgIsNewGesAes riotg, -- Группа_ДПМ
         grNGO = maybe False (\n -> ngoStartDate n <= cndStartYearDate) ngo, -- Группа_НГО
         grRPRF_2699 = maybe False (\r -> rprf2699StartDate r <= cndStartYearDate) rprf2699, -- Группа_РПРФ2699p
         grVRwithAllYearCapacity = vrWithAllYearCapacity, -- Группа_ВР_с_МЩ_весь_год
@@ -288,7 +297,7 @@ mkGeneratorEntry ConstantsAndDates {cndStartYearDate, cndFinishYearDate, cndVrBa
         grIsVRProhibit = vrIsVrZapret <$> vr, -- IS_VR_ZAPRET
         grIsVyvodSoglasovan = isJust vyvodSoglasovan, -- IS_VUVOD_SOGLASOVAN
         grVyvodSoglasovanDate = vyvodSoglasovanDate <$> vyvodSoglasovan, -- DATA_VUVODA
-        grComment = ""
+        grComment = []
       }
 
 isSelectedKom :: GemSelectionResult -> Bool
@@ -303,6 +312,10 @@ isSelectedKom = \case
   GSRNotSelectedWithZeroYearlyVolume -> False
   GSRMVR -> True
   GSRDPM -> True
+  GSRKommod -> True
+  GSRKomNgo -> True
+  GSRSelectedRPRF2699 -> True
+  GSRisNull -> False
 
 komYearSelectedVolume :: KOMTG -> Float
 komYearSelectedVolume kom =
@@ -322,3 +335,99 @@ komYearSelectedVolume kom =
         komtgNov,
         komtgDec
       ]
+
+updateGeneratorEntry :: ConstantsAndDates -> GeneratorEntry -> Maybe KOMTG -> Maybe VRParams -> Maybe KommodParams -> GeneratorEntry
+updateGeneratorEntry cnd gr mbkom mbvr mbkommod =
+  let startYear = cndStartYearDate cnd
+      endYear = cndFinishYearDate cnd
+      updateFunctions =
+        [ updateWhen grKOMRequestAbsent (\g -> g {grNotSelectedInKOM = True}),
+          updateWhen
+            (\g -> (grGemSelectionResult g == GSRSelected) && maybe True (\k -> komYearSelectedVolume k == 0) mbkom)
+            (\g -> g {grKOM = False, grNotSelectedInKOM = True}),
+          updateWhen grKOMMOD (\g -> g {grGemSelectionResult = GSRKommod}),
+          updateWhen grNGO (\g -> g {grGemSelectionResult = GSRKomNgo, grComment = grComment g ++ ["Договор КОМНГО, аналогичный ДПМ"]}),
+          updateWhen grRPRF_2699 (\g -> g {grGemSelectionResult = GSRSelectedRPRF2699, grComment = grComment g ++ ["Секретные Крымские. РД по мощности им не делали. 'Отобраны в КОМ' по распоряжению правительства 26-99р"]}),
+          updateWhen (\_ -> maybe False vr2007_2011 mbvr) (\g -> g {grVR_2007_2011 = Just True}),
+          \g -> case mbkommod of
+            Nothing -> g
+            Just KommodParams {kommodStartDate}
+              | kommodStartDate <= endYear ->
+                  g
+                    { grComment = grComment g ++ ["Модернизируется на КОММОД с " <> Text.pack (show kommodStartDate)],
+                      grPWSupply = supplyAttributeIntersection (grPWSupply g) SupplyPeriod {supplyPeriodFrom = startYear, supplyPeriodTo = kommodStartDate}
+                    }
+              | otherwise -> g,
+          \g -> case mbkommod of
+            Nothing -> g
+            Just KommodParams {kommodFinishDate}
+              | kommodFinishDate < endYear ->
+                  g
+                    { grComment = grComment g ++ ["Модернизируется до " <> Text.pack (show kommodFinishDate) <> ", затем уходит с Опта"],
+                      grEESupply = supplyAttributeIntersection (grEESupply g) SupplyPeriod {supplyPeriodFrom = startYear, supplyPeriodTo = kommodFinishDate}
+                    }
+              | otherwise -> g,
+          \g -> case mbkommod of
+            Nothing -> g
+            Just KommodParams {kommodSupplyStartDate} ->
+              g
+                { grComment = grComment g ++ ["Поставка после модернизаци по договору КОММОД с " <> Text.pack (show kommodSupplyStartDate)],
+                  grPWSupply = case grGemSelectionResult g of
+                    GSRisNull ->
+                      if kommodSupplyStartDate <= cndFirstApril cnd
+                        then SupplyPeriod {supplyPeriodFrom = cndSecondTermDate cnd, supplyPeriodTo = cndFinishYearDate cnd}
+                        else NoSupply
+                    _ -> grPWSupply g
+                },
+          \g -> case grVyvodSoglasovanDate g of
+            Nothing -> g
+            Just dataVyvoda
+              | dataVyvoda >= cndFinishYearDate cnd -> g
+              | otherwise ->
+                  g
+                    { grComment = grComment g ++ ["Согласован вывод из эксплуатаци с " <> Text.pack (show dataVyvoda)],
+                      grPWSupply =
+                        if dataVyvoda <= cndStartYearDate cnd
+                          then NoSupply
+                          else
+                            if dataVyvoda < cndFinishYearDate cnd
+                              then supplyAttributeIntersection (grPWSupply g) SupplyPeriod {supplyPeriodFrom = cndStartYearDate cnd, supplyPeriodTo = dataVyvoda}
+                              else grPWSupply g,
+                      grEESupply =
+                        if dataVyvoda <= cndStartYearDate cnd
+                          then NoSupply
+                          else
+                            if dataVyvoda < cndFinishYearDate cnd
+                              then supplyAttributeIntersection (grEESupply g) SupplyPeriod {supplyPeriodFrom = cndStartYearDate cnd, supplyPeriodTo = dataVyvoda}
+                              else grEESupply g
+                    }
+        ]
+   in foldr (\upFunc acc -> upFunc acc) gr updateFunctions
+  where
+    updateWhen :: (a -> Bool) -> (a -> a) -> a -> a
+    updateWhen predicate upFunc x = if predicate x then upFunc x else x
+
+doubleDPM :: ConstantsAndDates -> GeneratorEntry -> [GeneratorEntry]
+doubleDPM cnd gr =
+  let startYear = cndStartYearDate cnd
+      endYear = cndFinishYearDate cnd
+   in case grDpmFinishDate gr of
+        Nothing -> [gr]
+        Just finish ->
+          if (grIsDPM gr || grIsNewGesAes gr) && (finish >= startYear && finish < endYear)
+            then
+              [ gr
+                  { grIsDPM = False,
+                    grDPM = False,
+                    grPWSupply = SupplyPeriod {supplyPeriodFrom = finish, supplyPeriodTo = endYear},
+                    grComment = grComment gr ++ ["Без ДПМная часть - ДПМ не до конца года - Дата прекращения ДПМ: " <> Text.pack (show finish)]
+                  },
+                gr
+                  { grIsDPM = True,
+                    grDPM = True,
+                    grKOM = False,
+                    grPWSupply = NoSupply,
+                    grComment = grComment gr ++ ["ДПМная часть - ДПМ не до конца года - Дата прекращения ДПМ: " <> Text.pack (show finish)]
+                  }
+              ]
+            else [gr]

@@ -30,6 +30,12 @@ in
       # ghci> import qualified Text.Show.Unicode
       # ghci> :set -interactive-print=Text.Show.Unicode.uprint
     ];
+
+  shellHook = ''
+        echo "Entering my Nix shell environment..."
+        # code .
+    '';
+
 }
 
 # To run HLS:

@@ -35,6 +35,7 @@ data GeneratorEntry = GeneratorEntry
     grVRNotUntilTheYearEnd :: Maybe Bool, -- ВР_не_до_конца_года
     grVRNotCondideredInKOM :: Maybe Bool, -- ВР_не_учтён_в_КОМ
     grDpmStartDate :: Maybe Day, -- Дата_начала_поставки_ДПМ
+    grDpmFinishDate :: Maybe Day, -- Дата окончания поставки ДПМ (новое поле)
     grVRProhibitDecisionDate :: Maybe Day, -- Дата_решения_о_запрете(ВР)
     grKOM :: Bool, -- Группа_КОМ
     grKOMMOD :: Bool, -- Группа_КОММОД
@@ -59,6 +60,6 @@ data GeneratorEntry = GeneratorEntry
     grIsVRProhibit :: Maybe Bool, -- IS_VR_ZAPRET
     grIsVyvodSoglasovan :: Bool, -- IS_VUVOD_SOGLASOVAN
     grVyvodSoglasovanDate :: Maybe Day, -- DATA_VUVODA
-    grComment :: String -- Комментарий
+    grComment :: [Text] -- Комментарий
   }
   deriving (Show)
