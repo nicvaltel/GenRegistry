@@ -1,15 +1,22 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Types.Types where
 
 import Data.Text (Text)
 import Data.Time.Calendar (Day)
 import TextShow
 import Data.Vector.Fusion.Bundle.Monadic (fromStream)
+import Text.Printf (printf)
 
 class ShowText a where
   showText :: a -> Text
 
 type ErrorMsg = String
+
+data SupplyUnits = EE | PW
 
 newtype Warning = Warning {unWarning :: String}
   deriving (Show, Eq, Ord)
@@ -81,10 +88,24 @@ newtype RPRF2699Params = RPRF2699Params {rprf2699StartDate :: Day}
 
 newtype VyvodSoglasovan = VyvodSoglasovan {vyvodSoglasovanDate :: Day}
 
-data SupplyAttribute = NoSupply | SupplyAllYear | SupplyPeriod {supplyPeriodFrom :: Day, supplyPeriodTo :: Day}
-  deriving (Show, Eq)
 
-supplyAttributeIntersection :: SupplyAttribute -> SupplyAttribute -> SupplyAttribute
+
+data SupplyAttribute (u :: SupplyUnits) = NoSupply | SupplyAllYear | SupplyPeriod {supplyPeriodFrom :: Day, supplyPeriodTo :: Day}
+  deriving ( Eq)
+
+instance Show (SupplyAttribute 'EE) where
+  show NoSupply = "NoSupply EE"
+  show SupplyAllYear = "SupplyAllYear EE"
+  show SupplyPeriod{supplyPeriodFrom , supplyPeriodTo} = printf "SupplyPeriod EE {supplyPeriodFrom = %s, supplyPeriodTo = %s}" (show supplyPeriodFrom) (show supplyPeriodTo)
+
+instance Show (SupplyAttribute 'PW) where
+  show NoSupply = "NoSupply PW"
+  show SupplyAllYear = "SupplyAllYear PW"
+  show SupplyPeriod{supplyPeriodFrom , supplyPeriodTo} = printf "SupplyPeriod PW {supplyPeriodFrom = %s, supplyPeriodTo = %s}" (show supplyPeriodFrom) (show supplyPeriodTo)
+
+
+
+supplyAttributeIntersection :: SupplyAttribute u -> SupplyAttribute u -> SupplyAttribute u
 supplyAttributeIntersection NoSupply _ = NoSupply
 supplyAttributeIntersection _ NoSupply = NoSupply
 supplyAttributeIntersection SupplyAllYear s = s

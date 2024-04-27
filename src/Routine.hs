@@ -30,7 +30,6 @@ routine inputData@InputData {datRIOTG, datKOMTG, datSoRegistry, datExploitationS
   -- TODO unique EGOCode in datKOMTG
   -- TODO change cnd to Reader
   -- TODO change SupplyPeriod to [SupplyPeriod] and intersect them at the end
-  -- TODO change SupplyPeriod to SupplyPeriod 'EE and 'PW
 
   (pustStations, pustGTPGs) <- getPust datRIOTG datSoRegistry
   let tgs = either error id (filterAndCheckInputData inputData pustStations)

@@ -1,5 +1,6 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DataKinds #-}
 
 module Types.GeneratorEntry (GeneratorEntry (..), generatorEntryToTextList, genEntryToCsvFormat) where
 
@@ -52,8 +53,8 @@ data GeneratorEntry = GeneratorEntry
     grVR_2007_2011 :: Maybe Bool, -- Группа_ВР_2007-2011
     grVRafter15october :: Maybe Bool, -- Группа_ВР_после_15_октября
     grVRNotAllYear :: Maybe Bool, -- Группа_ВР_не_весь_год
-    grEESupply :: SupplyAttribute, -- Поставка_ЭЭ_по_РД
-    grPWSupply :: SupplyAttribute, -- Поставка_МЩ_по_РД
+    grEESupply :: SupplyAttribute 'EE, -- Поставка_ЭЭ_по_РД
+    grPWSupply :: SupplyAttribute 'PW, -- Поставка_МЩ_по_РД
     grPustStation :: Pust, -- Руст_станции
     grIsNewGesAes :: Bool, -- IS_NEW_GES_AES
     grIsVr :: Bool, -- IS_VR
