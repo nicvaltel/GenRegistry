@@ -1,7 +1,10 @@
+{-# LANGUAGE NamedFieldPuns #-}
 module Types.Types where
 
 import Data.Text (Text)
 import Data.Time.Calendar (Day)
+import TextShow
+import Data.Vector.Fusion.Bundle.Monadic (fromStream)
 
 class ShowText a where
   showText :: a -> Text
@@ -90,3 +93,8 @@ supplyAttributeIntersection sp1 sp2 | supplyPeriodFrom sp1 > supplyPeriodTo sp2 
 supplyAttributeIntersection sp1 sp2 | supplyPeriodTo sp1 < supplyPeriodFrom sp2 = NoSupply
 supplyAttributeIntersection sp1 sp2 = 
   SupplyPeriod {supplyPeriodFrom = max (supplyPeriodFrom sp1) (supplyPeriodFrom sp2), supplyPeriodTo = min (supplyPeriodTo sp1) (supplyPeriodTo sp2)}
+
+
+-- instance TextShow SupplyAttribute where
+--   showb SupplyPeriod{supplyPeriodFrom, supplyPeriodTo} = unwordsB [fromString $ show supplyPeriodFrom, fromString $ show supplyPeriodTo]
+--   showb supply = fromString . show $ supply

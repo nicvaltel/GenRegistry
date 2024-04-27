@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}  
 module Main (main) where
 
 import Configuration.Dotenv (parseFile)
@@ -8,23 +9,20 @@ import Data.ByteString.UTF8 (fromString)
 import Data.List (nub, sort)
 import Data.Text.Encoding (encodeUtf8)
 import qualified Data.Text.IO as T
+import qualified Data.Text as Text
 import LoadInputData
 import Routine (routine)
 import Types.KOMTG (KOMTG (..))
 import Utils
+import Types.GeneratorEntry (GeneratorEntry(..), generatorEntryToTextList, genEntryToCsvFormat)
+import Types.Types (SupplyAttribute(..), ConstantsAndDates (..))
+import TextShow (printT)
 
 main :: IO ()
 main = do
   env <- parseFile "config.env"
 
   inputData <- loadInputData env
-
-  -- mapM_ (\x -> C8.putStr (komtgStationName x) >> (C8.putStr $ fromString $ show x) >> putStr "\n")  (take 35 $ datKOMTG inputData)
-  -- mapM_ (\x -> C8.putStr (komtgStationName  x) >> putStr "\n")  (take 35 $ datKOMTG inputData)
-  -- mapM_ (putTextLnUtf8 . komtgStationName)  (take 35 $ datKOMTG inputData)
-
-  -- mapM_ (\x -> (C8.putStr $ fromString $ show x) >> putStr "\n")  (take 35 $ datSoRegistry inputData)
-
   -- mapM_ (putTextLnUtf8 . showText)  (take 35 $ datRIOTG inputData)
 
   let (result, warnings) = runWriter (routine inputData)
@@ -33,4 +31,10 @@ main = do
   forM_ (sort $ nub warnings) $ \w -> print w
 
   putStrLn "\n***************** RESULT *****************\n"
-  forM_ result $ \r -> print r
+
+  -- forM_ result $ \r -> print r
+  -- forM_ result $ \r -> putTextLnUtf8 $ Text.pack $ show $ grSubject r
+  -- printT $ SupplyPeriod {supplyPeriodFrom = cndStartYearDate (datConstantsAndDates inputData), supplyPeriodTo = cndStartYearDate (datConstantsAndDates inputData)}
+
+  putTextLnUtf8 $ genEntryToCsvFormat result
+

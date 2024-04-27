@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Utils (dateConvert, putStrUtf8, putStrLnUtf8, putTextUtf8, putTextLnUtf8, countElems) where
+module Utils (dateConvert, putStrUtf8, putStrLnUtf8, putTextUtf8, putTextLnUtf8, countElems, tshow,tMayShow) where
 
 import qualified Data.ByteString.Char8 as C8 (putStr, putStrLn)
 import Data.ByteString.UTF8 (fromString)
@@ -9,6 +9,13 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Encoding (encodeUtf8)
 import Prelude hiding (putStr, putStrLn)
+
+tshow :: Show a => a -> Text
+tshow = Text.pack . show
+
+tMayShow :: Show a => Maybe a -> Text
+tMayShow = maybe "" tshow
+
 
 dateConvert :: String -> String -> Text -> Text
 dateConvert _ _ "" = ""
