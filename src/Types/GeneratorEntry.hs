@@ -1,13 +1,13 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DataKinds #-}
 
 module Types.GeneratorEntry (GeneratorEntry (..), generatorEntryToTextList, genEntryToCsvFormat) where
 
 import Data.Text (Text, pack)
 import qualified Data.Text as Text
 import Data.Time.Calendar (Day)
--- import TextShow
 import Types.Types
 import Utils (tMayShow, tshow)
 
@@ -53,8 +53,8 @@ data GeneratorEntry = GeneratorEntry
     grVR_2007_2011 :: Maybe Bool, -- Группа_ВР_2007-2011
     grVRafter15october :: Maybe Bool, -- Группа_ВР_после_15_октября
     grVRNotAllYear :: Maybe Bool, -- Группа_ВР_не_весь_год
-    grEESupply :: SupplyAttribute 'EE, -- Поставка_ЭЭ_по_РД
-    grPWSupply :: SupplyAttribute 'PW, -- Поставка_МЩ_по_РД
+    grEESupply :: [SupplyAttribute 'EE], -- Поставка_ЭЭ_по_РД
+    grPWSupply :: [SupplyAttribute 'PW], -- Поставка_МЩ_по_РД
     grPustStation :: Pust, -- Руст_станции
     grIsNewGesAes :: Bool, -- IS_NEW_GES_AES
     grIsVr :: Bool, -- IS_VR
@@ -250,7 +250,7 @@ generatorEntryHeader =
   ]
 
 genEntryToCsvFormat :: [GeneratorEntry] -> Text
-genEntryToCsvFormat gs = 
+genEntryToCsvFormat gs =
   let gsText = map (Text.intercalate ";" . generatorEntryToTextList) gs
       gsHeader = Text.intercalate ";" generatorEntryHeader
-  in Text.intercalate "\n" (gsHeader : gsText)
+   in Text.intercalate "\n" (gsHeader : gsText)

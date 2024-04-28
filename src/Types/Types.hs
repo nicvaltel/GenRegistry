@@ -1,14 +1,38 @@
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE FlexibleInstances #-}
-module Types.Types where
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE NamedFieldPuns #-}
+
+module Types.Types
+  ( GTPGCode,
+    ErrorMsg,
+    SupplyAttribute (..),
+    GemSelectionResult (..),
+    XAttrType (..),
+    VyvodSoglasovan (..),
+    RPRF2699Params (..),
+    NGOParams (..),
+    KommodParams (..),
+    DPMParams (..),
+    VRParams (..),
+    GaCode2007_2011,
+    Pust,
+    StationCode,
+    ConstantsAndDates (..),
+    Warning (..),
+    SupplyUnits (..),
+    StationType (..),
+    StationCategory (..),
+    PriceZone (..),
+    MVRType (..),
+    GaCode,
+    ShowText (..),
+    intersectSupplyPeriods,
+  )
+where
 
 import Data.Text (Text)
 import Data.Time.Calendar (Day)
-import TextShow
-import Data.Vector.Fusion.Bundle.Monadic (fromStream)
 import Text.Printf (printf)
 
 class ShowText a where
@@ -88,34 +112,28 @@ newtype RPRF2699Params = RPRF2699Params {rprf2699StartDate :: Day}
 
 newtype VyvodSoglasovan = VyvodSoglasovan {vyvodSoglasovanDate :: Day}
 
-
-
 data SupplyAttribute (u :: SupplyUnits) = NoSupply | SupplyAllYear | SupplyPeriod {supplyPeriodFrom :: Day, supplyPeriodTo :: Day}
-  deriving ( Eq)
+  deriving (Eq)
 
 instance Show (SupplyAttribute 'EE) where
   show NoSupply = "NoSupply EE"
   show SupplyAllYear = "SupplyAllYear EE"
-  show SupplyPeriod{supplyPeriodFrom , supplyPeriodTo} = printf "SupplyPeriod EE {supplyPeriodFrom = %s, supplyPeriodTo = %s}" (show supplyPeriodFrom) (show supplyPeriodTo)
+  show SupplyPeriod {supplyPeriodFrom, supplyPeriodTo} = printf "SupplyPeriod EE {supplyPeriodFrom = %s, supplyPeriodTo = %s}" (show supplyPeriodFrom) (show supplyPeriodTo)
 
 instance Show (SupplyAttribute 'PW) where
   show NoSupply = "NoSupply PW"
   show SupplyAllYear = "SupplyAllYear PW"
-  show SupplyPeriod{supplyPeriodFrom , supplyPeriodTo} = printf "SupplyPeriod PW {supplyPeriodFrom = %s, supplyPeriodTo = %s}" (show supplyPeriodFrom) (show supplyPeriodTo)
+  show SupplyPeriod {supplyPeriodFrom, supplyPeriodTo} = printf "SupplyPeriod PW {supplyPeriodFrom = %s, supplyPeriodTo = %s}" (show supplyPeriodFrom) (show supplyPeriodTo)
 
-
-
-supplyAttributeIntersection :: SupplyAttribute u -> SupplyAttribute u -> SupplyAttribute u
-supplyAttributeIntersection NoSupply _ = NoSupply
-supplyAttributeIntersection _ NoSupply = NoSupply
-supplyAttributeIntersection SupplyAllYear s = s
-supplyAttributeIntersection s SupplyAllYear = s
-supplyAttributeIntersection sp1 sp2 | supplyPeriodFrom sp1 > supplyPeriodTo sp2 = NoSupply
-supplyAttributeIntersection sp1 sp2 | supplyPeriodTo sp1 < supplyPeriodFrom sp2 = NoSupply
-supplyAttributeIntersection sp1 sp2 = 
-  SupplyPeriod {supplyPeriodFrom = max (supplyPeriodFrom sp1) (supplyPeriodFrom sp2), supplyPeriodTo = min (supplyPeriodTo sp1) (supplyPeriodTo sp2)}
-
-
--- instance TextShow SupplyAttribute where
---   showb SupplyPeriod{supplyPeriodFrom, supplyPeriodTo} = unwordsB [fromString $ show supplyPeriodFrom, fromString $ show supplyPeriodTo]
---   showb supply = fromString . show $ supply
+intersectSupplyPeriods :: [SupplyAttribute (u :: SupplyUnits)] -> SupplyAttribute (u :: SupplyUnits)
+intersectSupplyPeriods = foldr supplyAttributeIntersection SupplyAllYear
+  where
+    supplyAttributeIntersection :: SupplyAttribute u -> SupplyAttribute u -> SupplyAttribute u
+    supplyAttributeIntersection NoSupply _ = NoSupply
+    supplyAttributeIntersection _ NoSupply = NoSupply
+    supplyAttributeIntersection SupplyAllYear s = s
+    supplyAttributeIntersection s SupplyAllYear = s
+    supplyAttributeIntersection sp1 sp2 | supplyPeriodFrom sp1 > supplyPeriodTo sp2 = NoSupply
+    supplyAttributeIntersection sp1 sp2 | supplyPeriodTo sp1 < supplyPeriodFrom sp2 = NoSupply
+    supplyAttributeIntersection sp1 sp2 =
+      SupplyPeriod {supplyPeriodFrom = max (supplyPeriodFrom sp1) (supplyPeriodFrom sp2), supplyPeriodTo = min (supplyPeriodTo sp1) (supplyPeriodTo sp2)}

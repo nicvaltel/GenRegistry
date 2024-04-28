@@ -15,8 +15,9 @@ import Routine (routine)
 import Types.KOMTG (KOMTG (..))
 import Utils
 import Types.GeneratorEntry (GeneratorEntry(..), generatorEntryToTextList, genEntryToCsvFormat)
-import Types.Types (SupplyAttribute(..), ConstantsAndDates (..))
+import Types.Types (SupplyAttribute(..), ConstantsAndDates (..), ShowText (showText))
 import TextShow (printT)
+import Control.Monad.RWS (runRWS)
 
 main :: IO ()
 main = do
@@ -25,7 +26,7 @@ main = do
   inputData <- loadInputData env
   -- mapM_ (putTextLnUtf8 . showText)  (take 35 $ datRIOTG inputData)
 
-  let (result, warnings) = runWriter (routine inputData)
+  let (result, _, warnings) = runRWS (routine inputData) (datConstantsAndDates inputData) ()
 
   putStrLn "\n**************** WARNINGS ****************\n"
   forM_ (sort $ nub warnings) $ \w -> print w

@@ -11,19 +11,12 @@ import Data.Text.Encoding
 import Types.Types
 
 data KOMTG = KOMTG
-  { -- komtgFilialODU :: String,
-    -- komtgPriseZone :: PriceZone,
-    komtgSubjectCode :: String,
-    -- komtgSubjectName :: String,
-    -- komtgSubjectFullName :: String,
+  { komtgSubjectCode :: String,
     komtgStationCode :: String,
     komtgStationName :: Text,
     komtgGTPGCode :: String,
-    -- komtgGTPGName :: String,
     komtgGEMCode :: String,
-    -- komtgGEMName :: String,
     komtgStationType :: StationType,
-    -- komtgEGOName :: String,
     komtgEGOCode :: GaCode,
     komtgDPMCode :: Maybe Int,
     komtgMVR :: Bool,
@@ -48,19 +41,12 @@ data KOMTG = KOMTG
 
 instance FromNamedRecord KOMTG where
   parseNamedRecord record = do
-    -- komtgFilialODU <- record .: encodeUtf8 "Филиал ОДУ"
-    -- komtgPriseZone <- getPriceZone <$> record .: encodeUtf8 "Код ЦЗ"
     komtgSubjectCode <- record .: encodeUtf8 "Код участника оптового рынка"
-    -- komtgSubjectName <- record .: encodeUtf8 "Участник оптового рынка"
-    -- komtgSubjectFullName <- record .: encodeUtf8 "Участник оптового рынка (полное наименование)"
     komtgStationCode <- record .: encodeUtf8 "Код электростанции"
     komtgStationName <- Text.pack <$> record .: encodeUtf8 "Наименование электростанции"
     komtgGTPGCode <- record .: encodeUtf8 "Код ГТПГ"
-    -- komtgGTPGName <- record .: encodeUtf8 "Наименование ГТПГ"
     komtgGEMCode <- record .: encodeUtf8 "Код ГЕМ"
-    -- komtgGEMName <- record .: encodeUtf8 "ГЕМ"
     komtgStationType <- getStationType <$> record .: encodeUtf8 "Тип э/ст"
-    -- komtgEGOName <- record .: encodeUtf8 "Наименование ЕГО"
     komtgEGOCode <- record .: encodeUtf8 "КОД ЕГО"
     komtgDPMCode <- record .: encodeUtf8 "ДПМ"
     komtgMVR <- intTextToBool <$> record .: encodeUtf8 "МВР"
@@ -82,19 +68,12 @@ instance FromNamedRecord KOMTG where
     komtgYearSum <- record .: encodeUtf8 "F32"
     pure
       KOMTG
-        { -- komtgFilialODU,
-          -- komtgPriseZone,
-          komtgSubjectCode,
-          -- komtgSubjectName,
-          -- komtgSubjectFullName,
+        { komtgSubjectCode,
           komtgStationCode,
           komtgStationName,
           komtgGTPGCode,
-          -- komtgGTPGName,
           komtgGEMCode,
-          -- komtgGEMName,
           komtgStationType,
-          -- komtgEGOName,
           komtgEGOCode,
           komtgDPMCode,
           komtgMVR,
@@ -116,11 +95,6 @@ instance FromNamedRecord KOMTG where
           komtgYearSum
         }
     where
-      -- getPriceZone :: Text -> PriceZone
-      -- getPriceZone "1" = EUR
-      -- getPriceZone "2" = SIB
-      -- getPriceZone other = error $ "getPriceZone wrong text: " <> Text.unpack other
-
       getStationType :: Text -> StationType
       getStationType "1" = TES
       getStationType "2" = GES

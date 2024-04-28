@@ -179,6 +179,7 @@ instance FromNamedRecord RIOTG where
       getXAttrType :: Text -> XAttrType
       getXAttrType "" = EMPTY_XATTR_TYPE
       getXAttrType "is_renewable_dpm" = IS_RENEWABLE_DPM
+      getXAttrType "is_mobile" = IS_MOBILE
       getXAttrType other = error $ "getXAttrType wrong text: " <> Text.unpack other
 
       getDay :: Text -> Maybe Day
